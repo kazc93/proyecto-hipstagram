@@ -10,9 +10,9 @@ const app: express.Application = express();
 // CONFIGURACIÓN DE CORS
 const corsOptions: CorsOptions = {
     origin: [
-        'http://localhost:4200',        // Angular Local
-        'http://localhost:3000',        // React u otro
-        'https://tu-dominio-real.com'   // Producción
+        'http://localhost:4200',
+        'http://localhost:3000',
+        'https://main.dyer5iztb0u8h.amplifyapp.com'
     ],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'x-correlation-id'], // Permitimos el header nuevo
