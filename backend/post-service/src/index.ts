@@ -67,7 +67,7 @@ try {
             imageUrl = s3Response.Location;
         } else {
             const filename = (req.file as Express.Multer.File & { filename: string }).filename;
-            imageUrl = `http://localhost:8080/posts/uploads/${filename}`;
+            imageUrl = `${process.env.PUBLIC_URL || 'https://54.234.8.66.nip.io'}/posts/uploads/${filename}`;
         }
 
         // 2. LÓGICA DE MODERACIÓN AUTOMÁTICA

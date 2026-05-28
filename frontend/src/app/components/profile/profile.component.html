@@ -1,29 +1,44 @@
-<div class="profile-container">
-  <div class="profile-header">
-    <div class="avatar-placeholder">📸</div>
-    <div class="profile-info">
-      <h2>Publicaciones del Usuario</h2>
-      <p><strong>{{ totalPosts }}</strong> publicaciones encontradas</p>
-    </div>
+<div class="min-h-screen bg-gray-50">
+
+  <!-- Header -->
+  <div class="bg-white border-b border-gray-200 sticky top-0 z-10 px-4 py-3 flex items-center gap-3">
+    <button (click)="volverAlFeed()" class="text-hipstagram-primary font-bold flex items-center gap-1 hover:opacity-75 transition-opacity">
+      ← Volver al feed
+    </button>
   </div>
 
-  <hr class="divider">
+  <div class="max-w-2xl mx-auto py-6 px-4">
 
-  <div *ngIf="!loading; else loadingTemplate" class="posts-grid">
-    <div *ngFor="let post of posts" class="grid-item">
-      <img [src]="post.url_imagen" [alt]="post.descripcion">
-      <div class="grid-item-overlay">
-        <span>❤️ {{ post.likes }}</span>
-        <span>💬 {{ post.total_comentarios }}</span>
+    <!-- Info del perfil -->
+    <div class="flex items-center gap-4 mb-6">
+      <div class="w-16 h-16 rounded-full bg-hipstagram-primary text-white flex items-center justify-center text-3xl font-bold">📸</div>
+      <div>
+        <h2 class="text-xl font-bold text-gray-800">Mis Publicaciones</h2>
+        <p class="text-sm text-gray-500"><strong>{{ totalPosts }}</strong> publicaciones</p>
       </div>
     </div>
-  </div>
 
-  <div *ngIf="posts.length === 0 && !loading" class="no-posts">
-    <p>Este usuario aún no tiene publicaciones aprobadas.</p>
-  </div>
+    <hr class="mb-6 border-gray-200">
 
-  <ng-template #loadingTemplate>
-    <div class="loading-spinner">Cargando galería del perfil...</div>
-  </ng-template>
+    <!-- Grid de posts -->
+    <div *ngIf="!loading; else loadingTemplate" class="grid grid-cols-3 gap-1">
+      <div *ngFor="let post of posts" class="relative aspect-square overflow-hidden bg-gray-200 rounded-sm">
+        <img [src]="post.url_imagen" [alt]="post.descripcion" class="w-full h-full object-cover">
+        <div class="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-40 transition-all flex items-center justify-center opacity-0 hover:opacity-100 gap-3 text-white font-bold text-sm">
+          <span>❤️ {{ post.likes }}</span>
+          <span>💬 {{ post.total_comentarios }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="posts.length === 0 && !loading" class="text-center py-16 text-gray-400">
+      <p class="text-4xl mb-2">📭</p>
+      <p class="font-medium">Aún no tienes publicaciones aprobadas.</p>
+    </div>
+
+    <ng-template #loadingTemplate>
+      <div class="text-center py-16 text-gray-400">Cargando galería...</div>
+    </ng-template>
+
+  </div>
 </div>
