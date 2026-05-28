@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-profile',
@@ -16,10 +17,11 @@ export class ProfileComponent implements OnInit {
   loading = true;
   totalPosts = 0;
 
+  private apiUrl = environment.apiUrl;
+
   constructor(private route: ActivatedRoute, private http: HttpClient) {}
 
   ngOnInit() {
-    // Captura el ID del usuario desde la ruta activa (ej: /profile/uuid-id)
     this.userId = this.route.snapshot.paramMap.get('id');
     if (this.userId) {
       this.loadUserPosts();
@@ -27,7 +29,7 @@ export class ProfileComponent implements OnInit {
   }
 
   loadUserPosts() {
-    this.http.get(`http://localhost:3002/user/${this.userId}`).subscribe({
+    this.http.get(`${this.apiUrl}/posts/user/${this.userId}`).subscribe({
       next: (res: any) => {
         this.posts = res.data;
         this.totalPosts = res.total;
