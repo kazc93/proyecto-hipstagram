@@ -40,7 +40,11 @@ export class LoginComponent {
         }
       },
       error: (err) => {
-        this.mensajeError = 'Credenciales incorrectas. Inténtalo de nuevo.';
+        if (err.status === 403) {
+          this.mensajeError = 'Tu cuenta ha sido suspendida. Comunícate con el administrador.';
+        } else {
+          this.mensajeError = 'Credenciales incorrectas. Inténtalo de nuevo.';
+        }
         console.error(err);
       }
     });
