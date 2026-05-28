@@ -19,6 +19,10 @@ export class AdminComponent implements OnInit {
   // Arreglo para guardar los usuarios que nos manda el backend
   usuarios: any[] = []; 
   logsAuditoria: any[] = [];
+  paginaAuditoria = 1;
+  totalPaginasAuditoria = 1;
+  totalLogsAuditoria = 0;
+  limitAuditoria = 10;
 
   // --- VARIABLES DE MODERACIÓN ---
   subVistaModeracion: 'posts' | 'palabras' = 'posts';
@@ -92,11 +96,20 @@ export class AdminComponent implements OnInit {
     }
   }
 
-  cargarAuditoria() {
-    this.adminService.obtenerAuditoria().subscribe({
-      next: (data) => this.logsAuditoria = data,
+  cargarAuditoria(page: number = 1) {
+    this.paginaAuditoria = page;
+    this.adminService.obtenerAuditoria(this.filtrosAudit, page, this.limitAuditoria).subscribe({
+      next: (res) => {
+        this.logsAuditoria = res.data;
+        this.totalLogsAuditoria = res.total;
+        this.totalPaginasAuditoria = res.totalPages;
+      },
       error: (err) => console.error('Error al cargar la auditoría:', err)
     });
+  }
+
+  get paginasArray(): number[] {
+    return Array.from({ length: this.totalPaginasAuditoria }, (_, i) => i + 1);
   }
 
   cargarPalabras() {
@@ -174,37 +187,12 @@ export class AdminComponent implements OnInit {
   };
 
   aplicarFiltrosAuditoria() {
-    // 1. Creamos un objeto limpio solo con los filtros que sí tienen texto
-    const filtrosLimpios: any = {};
-    
-    if (this.filtrosAudit.usuario_id.trim() !== '') {
-      filtrosLimpios.usuario_id = this.filtrosAudit.usuario_id.trim();
-    }
-    if (this.filtrosAudit.accion.trim() !== '') {
-      filtrosLimpios.accion = this.filtrosAudit.accion.trim();
-    }
-    if (this.filtrosAudit.fecha.trim() !== '') {
-      filtrosLimpios.fecha = this.filtrosAudit.fecha.trim();
-    }
-
-    console.log("Enviando filtros al backend:", filtrosLimpios);
-
-    // 2. Enviamos la petición
-    this.adminService.obtenerAuditoria(filtrosLimpios).subscribe({
-      next: (data) => {
-        console.log("Resultados encontrados:", data.length);
-        this.logsAuditoria = data;
-      },
-      error: (err) => {
-        console.error('Error al filtrar auditoría:', err);
-        alert('Hubo un problema al aplicar los filtros.');
-      }
-    });
+    this.cargarAuditoria(1);
   }
 
   limpiarFiltrosAuditoria() {
     this.filtrosAudit = { usuario_id: '', accion: '', fecha: '' };
-    this.cargarAuditoria(); // Vuelve a cargar todo sin filtros
+    this.cargarAuditoria(1);
   }
 
   cerrarSesion() {

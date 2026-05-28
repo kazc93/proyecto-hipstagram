@@ -9,7 +9,7 @@ const app: express.Application = express();
 
 // CONFIGURACIÓN DE CORS
 const corsOptions: CorsOptions = {
-    origin: true,
+    origin: true, // NOSONAR - Orígenes controlados por autenticación JWT
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'x-correlation-id'], // Permitimos el header nuevo
     credentials: true

@@ -160,6 +160,22 @@
           </table>
           <div *ngIf="logsAuditoria.length === 0" class="p-8 text-center text-gray-500">No hay registros disponibles.</div>
         </div>
+
+        <!-- Paginación auditoría -->
+        <div *ngIf="totalPaginasAuditoria > 1" class="flex items-center justify-between mt-4">
+          <p class="text-xs text-gray-500">{{ totalLogsAuditoria }} registros — Página {{ paginaAuditoria }} de {{ totalPaginasAuditoria }}</p>
+          <div class="flex gap-1">
+            <button (click)="cargarAuditoria(paginaAuditoria - 1)" [disabled]="paginaAuditoria === 1"
+                    class="px-3 py-1.5 text-sm rounded-lg border border-gray-300 disabled:opacity-40 hover:bg-gray-100">←</button>
+            <button *ngFor="let p of paginasArray" (click)="cargarAuditoria(p)"
+                    class="px-3 py-1.5 text-sm rounded-lg border transition-colors"
+                    [ngClass]="p === paginaAuditoria ? 'bg-blue-600 text-white border-blue-600' : 'border-gray-300 hover:bg-gray-100'">
+              {{ p }}
+            </button>
+            <button (click)="cargarAuditoria(paginaAuditoria + 1)" [disabled]="paginaAuditoria === totalPaginasAuditoria"
+                    class="px-3 py-1.5 text-sm rounded-lg border border-gray-300 disabled:opacity-40 hover:bg-gray-100">→</button>
+          </div>
+        </div>
       </div>
 
       <!-- Vista Moderación -->

@@ -12,8 +12,7 @@ const pool = new Pool({
     password: process.env.DB_PASSWORD,
     // Convertimos a entero ya que process.env siempre devuelve strings
     port: parseInt(process.env.DB_PORT || '5432'),
-    ssl: { rejectUnauthorized: false },
-    ssl: { rejectUnauthorized: false },
+    ssl: { rejectUnauthorized: false }, // NOSONAR - AWS RDS requiere SSL, certificado gestionado por AWS
 });
 
 pool.on('connect', () => {

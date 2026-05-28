@@ -12,8 +12,8 @@ export class PostService {
   constructor(private http: HttpClient) {}
 
   // 1. Obtener todas las publicaciones (Normalmente es el GET al root)
-  obtenerFeed(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/posts`); 
+  obtenerFeed(page: number = 1, limit: number = 10): Observable<any> {
+    return this.http.get(`${this.apiUrl}/posts?page=${page}&limit=${limit}`);
   }
 
   // 2. Subir una nueva (Debe coincidir con Postman)

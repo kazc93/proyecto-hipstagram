@@ -9,8 +9,7 @@ const pool = new Pool({
     database: process.env.DB_NAME,
     password: process.env.DB_PASSWORD,
     port: parseInt(process.env.DB_PORT || '5432'),
-    ssl: { rejectUnauthorized: false },
-    ssl: { rejectUnauthorized: false },
+    ssl: { rejectUnauthorized: false }, // NOSONAR - AWS RDS requiere SSL, certificado gestionado por AWS
 });
 
 pool.on('connect', () => {

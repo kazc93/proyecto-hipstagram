@@ -146,5 +146,11 @@
       <button (click)="cargarFeed()" class="text-hipstagram-primary text-sm hover:underline mt-2">Ver todo el feed</button>
     </div>
 
+    <!-- Sentinel para scroll infinito -->
+    <div #sentinel class="py-4 text-center">
+      <div *ngIf="cargandoMas" class="text-gray-400 text-sm animate-pulse">Cargando más publicaciones...</div>
+      <div *ngIf="!hayMasPosts && publicaciones.length > 0" class="text-gray-400 text-sm">Ya viste todo 🎉</div>
+    </div>
+
   </main>
 </div>

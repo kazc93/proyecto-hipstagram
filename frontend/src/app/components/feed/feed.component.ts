@@ -1,7 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, AfterViewInit, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
-import { FormsModule } from '@angular/forms'; // Importante para [(ngModel)]
+import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth/auth.service';
 import { PostService } from '../../services/post/post.service';
@@ -9,21 +9,27 @@ import { PostService } from '../../services/post/post.service';
 @Component({
   selector: 'app-feed',
   standalone: true,
-  imports: [CommonModule, FormsModule], // Agregamos FormsModule
+  imports: [CommonModule, FormsModule],
   templateUrl: './feed.component.html',
   styleUrl: './feed.component.css'
 })
-export class FeedComponent implements OnInit {
-  
+export class FeedComponent implements OnInit, OnDestroy, AfterViewInit {
+
   publicaciones: any[] = [];
-  
-  // Variables para nueva publicación
+  paginaActual = 1;
+  limitPorPagina = 10;
+  cargandoMas = false;
+  hayMasPosts = true;
+
   nuevoTexto: string = '';
   archivoSeleccionado: File | null = null;
   vistaPreviaImagen: string | ArrayBuffer | null = null;
 
+  @ViewChild('sentinel') sentinel!: ElementRef;
+  private observer!: IntersectionObserver;
+
   constructor(
-    private authService: AuthService, 
+    private authService: AuthService,
     private postService: PostService,
     private router: Router
   ) {}
@@ -32,12 +38,52 @@ export class FeedComponent implements OnInit {
     this.cargarFeed();
   }
 
+  ngAfterViewInit(): void {
+    this.observer = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting && !this.cargandoMas && this.hayMasPosts) {
+        this.cargarMas();
+      }
+    }, { threshold: 0.1 });
+    if (this.sentinel) this.observer.observe(this.sentinel.nativeElement);
+  }
+
+  ngOnDestroy(): void {
+    if (this.observer) this.observer.disconnect();
+  }
+
   cargarFeed() {
-    this.postService.obtenerFeed().subscribe({
-      next: (data) => {
-        this.publicaciones = data; // Asignamos lo que viene de PostgreSQL
+    this.paginaActual = 1;
+    this.hayMasPosts = true;
+    this.postService.obtenerFeed(1, this.limitPorPagina).subscribe({
+      next: (res) => {
+        const data = res.posts ?? res;
+        this.publicaciones = data;
+        if (data.length < this.limitPorPagina) this.hayMasPosts = false;
       },
       error: (err) => console.error('Error al cargar el feed', err)
+    });
+  }
+
+  cargarMas() {
+    if (this.cargandoMas || !this.hayMasPosts) return;
+    this.cargandoMas = true;
+    const siguientePagina = this.paginaActual + 1;
+    this.postService.obtenerFeed(siguientePagina, this.limitPorPagina).subscribe({
+      next: (res) => {
+        const data = res.posts ?? res;
+        if (data.length === 0) {
+          this.hayMasPosts = false;
+        } else {
+          this.publicaciones = [...this.publicaciones, ...data];
+          this.paginaActual = siguientePagina;
+          if (data.length < this.limitPorPagina) this.hayMasPosts = false;
+        }
+        this.cargandoMas = false;
+      },
+      error: (err) => {
+        console.error('Error al cargar más posts', err);
+        this.cargandoMas = false;
+      }
     });
   }
 

@@ -45,10 +45,11 @@ export class AdminService {
 
   // --- NUEVO MÉTODO PARA OBTENER LOGS ---
   // --- OBTENER AUDITORÍA CON FILTROS ---
-  obtenerAuditoria(filtros?: any): Observable<any> {
-    return this.http.get(`${this.apiUrl}/audit`, { 
+  obtenerAuditoria(filtros?: any, page: number = 1, limit: number = 10): Observable<any> {
+    const params = { ...(filtros || {}), page, limit };
+    return this.http.get(`${this.apiUrl}/audit`, {
       headers: this.getHeaders(),
-      params: filtros || {} 
+      params
     });
   }
   // --- MÉTODOS DE MODERACIÓN (FILTRO DE PALABRAS) ---

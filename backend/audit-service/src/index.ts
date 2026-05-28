@@ -22,33 +22,45 @@ app.use('/', auditRoutes);
 app.get(['/', '/audit'], verificarToken, async (req: AuthRequest, res: Response) => {
     if (req.user?.rol !== 'ADMIN') return res.status(403).send("No autorizado");
 
-    const { usuario_id, accion, fecha } = req.query;
-    let query = "SELECT * FROM auditoria WHERE 1=1";
+    const { usuario_id, accion, fecha, page, limit } = req.query;
+    const pageNum = parseInt(page as string) || 1;
+    const limitNum = parseInt(limit as string) || 10;
+    const offset = (pageNum - 1) * limitNum;
+
+    let whereClause = "WHERE 1=1";
     const params: any[] = [];
 
-    // Filtro por ID de Usuario
     if (usuario_id) {
         params.push(usuario_id);
-        query += ` AND usuario_id = $${params.length}`;
+        whereClause += ` AND usuario_id = $${params.length}`;
     }
-    
-    // Filtro por Acción
     if (accion) {
         params.push(accion);
-        query += ` AND accion = $${params.length}`;
+        whereClause += ` AND accion = $${params.length}`;
     }
-    
-    // Filtro por Fecha (Busca todo lo que empiece con la fecha seleccionada)
     if (fecha) {
-        params.push(`${fecha}%`); 
-        query += ` AND fecha_accion::text LIKE $${params.length}`;
+        params.push(`${fecha}%`);
+        whereClause += ` AND fecha_accion::text LIKE $${params.length}`;
     }
-
-    query += " ORDER BY fecha_accion DESC LIMIT 100";
 
     try {
-        const result = await pool.query(query, params);
-        res.json(result.rows);
+        const countResult = await pool.query(`SELECT COUNT(*) FROM auditoria ${whereClause}`, params);
+        const total = parseInt(countResult.rows[0].count);
+
+        params.push(limitNum);
+        params.push(offset);
+        const dataResult = await pool.query(
+            `SELECT * FROM auditoria ${whereClause} ORDER BY fecha_accion DESC LIMIT $${params.length - 1} OFFSET $${params.length}`,
+            params
+        );
+
+        res.json({
+            data: dataResult.rows,
+            total,
+            page: pageNum,
+            totalPages: Math.ceil(total / limitNum),
+            limit: limitNum
+        });
     } catch (err: any) {
         console.error("Error obteniendo auditoría filtrada:", err.message);
         res.status(500).json({ error: "Error interno al obtener los logs" });
