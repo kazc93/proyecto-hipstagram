@@ -12,6 +12,8 @@ const corsOptions: CorsOptions = {
     origin: [
         'http://localhost:4200',
         'http://localhost:3000',
+        'http://localhost',
+        'capacitor://localhost',
         'https://main.dyer5iztb0u8h.amplifyapp.com'
     ],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
