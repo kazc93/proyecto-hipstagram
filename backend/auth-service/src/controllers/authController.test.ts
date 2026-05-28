@@ -1,12 +1,13 @@
 jest.mock('../config/db', () => ({ __esModule: true, default: { query: jest.fn() } }));
 jest.mock('bcryptjs', () => ({ genSalt: jest.fn(), hash: jest.fn(), compare: jest.fn() }));
-jest.mock('jsonwebtoken', () => ({ sign: jest.fn().mockReturnValue('mock_token') }));
+jest.mock('jsonwebtoken', () => ({ sign: jest.fn().mockReturnValue('mock_token'), verify: jest.fn() }));
 jest.mock('../services/auditHelper', () => ({ sendToAudit: jest.fn().mockResolvedValue(undefined) }));
 
 import { Request, Response } from 'express';
-import { register, login } from './authController';
+import { register, login, refresh } from './authController';
 import pool from '../config/db';
 import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 import { sendToAudit } from '../services/auditHelper';
 
 const mockPool = pool as jest.Mocked<typeof pool>;
@@ -119,6 +120,50 @@ describe('AuthController', () => {
       await login(buildReq({ email: 'test@test.com', password: '123' }) as Request, res);
 
       expect(status).toHaveBeenCalledWith(500);
+    });
+  });
+
+  // ───────────── refresh ─────────────
+  describe('refresh', () => {
+    it('retorna 401 si no se envía refreshToken', async () => {
+      const { res, status } = buildRes();
+      await refresh(buildReq({}) as Request, res);
+      expect(status).toHaveBeenCalledWith(401);
+    });
+
+    it('retorna 403 si el refreshToken es inválido o expirado', async () => {
+      (jwt.verify as jest.Mock).mockImplementationOnce(() => { throw new Error('invalid token'); });
+
+      const { res, status } = buildRes();
+      await refresh(buildReq({ refreshToken: 'bad_token' }) as Request, res);
+      expect(status).toHaveBeenCalledWith(403);
+    });
+
+    it('retorna 403 si el usuario no existe en DB', async () => {
+      (jwt.verify as jest.Mock).mockReturnValueOnce({ id: 'uuid-test-1' });
+      mockPool.query.mockResolvedValueOnce({ rows: [] } as any);
+
+      const { res, status } = buildRes();
+      await refresh(buildReq({ refreshToken: 'some_token' }) as Request, res);
+      expect(status).toHaveBeenCalledWith(403);
+    });
+
+    it('retorna 403 si el refreshToken no coincide con el guardado en DB', async () => {
+      (jwt.verify as jest.Mock).mockReturnValueOnce({ id: 'uuid-test-1' });
+      mockPool.query.mockResolvedValueOnce({ rows: [{ refresh_token: 'otro_token', rol: 'USER' }] } as any);
+
+      const { res, status } = buildRes();
+      await refresh(buildReq({ refreshToken: 'mi_token' }) as Request, res);
+      expect(status).toHaveBeenCalledWith(403);
+    });
+
+    it('retorna nuevo access token para un refreshToken válido', async () => {
+      (jwt.verify as jest.Mock).mockReturnValueOnce({ id: 'uuid-test-1' });
+      mockPool.query.mockResolvedValueOnce({ rows: [{ refresh_token: 'valid_refresh', rol: 'USER' }] } as any);
+
+      const { res, json } = buildRes();
+      await refresh(buildReq({ refreshToken: 'valid_refresh' }) as Request, res);
+      expect(json).toHaveBeenCalledWith({ token: 'mock_token' });
     });
   });
 });
