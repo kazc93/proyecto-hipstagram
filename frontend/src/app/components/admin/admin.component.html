@@ -1,315 +1,271 @@
-<div class="flex h-screen bg-gray-100 font-sans">
+<div class="flex flex-col md:flex-row h-screen bg-gray-100 font-sans">
 
-  <aside class="w-64 bg-gray-900 text-white flex flex-col shadow-xl">
+  <!-- Sidebar desktop -->
+  <aside class="hidden md:flex w-64 bg-gray-900 text-white flex-col shadow-xl">
     <div class="p-6 border-b border-gray-800">
       <h1 class="text-2xl font-extrabold text-transparent bg-clip-text bg-linear-to-r from-hipstagram-primary to-blue-400">
         Admin Panel
       </h1>
       <p class="text-xs text-gray-400 mt-1">Hipstagram Control Center</p>
     </div>
-
     <nav class="flex-1 px-4 py-6 space-y-2">
-      <button 
-        (click)="cambiarVista('usuarios')"
+      <button (click)="cambiarVista('usuarios')"
         [class.bg-gray-800]="vistaActual === 'usuarios'"
         [class.border-l-4]="vistaActual === 'usuarios'"
         [class.border-hipstagram-primary]="vistaActual === 'usuarios'"
         class="w-full flex items-center space-x-3 px-4 py-3 text-sm font-medium rounded-r-lg hover:bg-gray-800 transition-colors text-left text-gray-300 hover:text-white">
-        <span class="text-lg">👥</span>
-        <span>Gestión de Usuarios</span>
+        <span class="text-lg">👥</span><span>Gestión de Usuarios</span>
       </button>
-
-      <button 
-        (click)="cambiarVista('auditoria')"
+      <button (click)="cambiarVista('auditoria')"
         [class.bg-gray-800]="vistaActual === 'auditoria'"
         [class.border-l-4]="vistaActual === 'auditoria'"
         [class.border-hipstagram-primary]="vistaActual === 'auditoria'"
         class="w-full flex items-center space-x-3 px-4 py-3 text-sm font-medium rounded-r-lg hover:bg-gray-800 transition-colors text-left text-gray-300 hover:text-white">
-        <span class="text-lg">📋</span>
-        <span>Auditoría de Logs</span>
+        <span class="text-lg">📋</span><span>Auditoría de Logs</span>
       </button>
-
-      <button 
-        (click)="cambiarVista('moderacion')"
+      <button (click)="cambiarVista('moderacion')"
         [class.bg-gray-800]="vistaActual === 'moderacion'"
         [class.border-l-4]="vistaActual === 'moderacion'"
         [class.border-hipstagram-primary]="vistaActual === 'moderacion'"
         class="w-full flex items-center space-x-3 px-4 py-3 text-sm font-medium rounded-r-lg hover:bg-gray-800 transition-colors text-left text-gray-300 hover:text-white">
-        <span class="text-lg">🛡️</span>
-        <span>Moderación</span>
+        <span class="text-lg">🛡️</span><span>Moderación</span>
       </button>
     </nav>
-
     <div class="p-4 border-t border-gray-800">
       <button (click)="cerrarSesion()" class="w-full flex items-center justify-center space-x-2 text-sm text-gray-400 hover:text-red-400 transition-colors py-2">
-        <span>🚪</span>
-        <span>Cerrar Sesión</span>
+        <span>🚪</span><span>Cerrar Sesión</span>
       </button>
     </div>
   </aside>
 
-  <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50">
-    <div class="p-8 max-w-7xl mx-auto">
-      
+  <!-- Header móvil -->
+  <header class="md:hidden bg-gray-900 text-white px-4 py-3 flex items-center justify-between shadow">
+    <div>
+      <h1 class="text-lg font-extrabold text-transparent bg-clip-text bg-linear-to-r from-hipstagram-primary to-blue-400">Admin Panel</h1>
+      <p class="text-xs text-gray-400">Hipstagram Control Center</p>
+    </div>
+    <button (click)="cerrarSesion()" class="text-gray-400 hover:text-red-400 text-sm">🚪</button>
+  </header>
+
+  <!-- Contenido principal -->
+  <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 pb-20 md:pb-0">
+    <div class="p-4 md:p-8 max-w-7xl mx-auto">
+
+      <!-- Vista Usuarios -->
       <div *ngIf="vistaActual === 'usuarios'" class="animate-fade-in">
-        <h2 class="text-3xl font-bold text-gray-800 mb-6">Usuarios Registrados</h2>
-        
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-          <table class="w-full text-left border-collapse">
+        <h2 class="text-2xl md:text-3xl font-bold text-gray-800 mb-4">Usuarios Registrados</h2>
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-x-auto">
+          <table class="w-full text-left border-collapse min-w-[500px]">
             <thead>
               <tr class="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider border-b border-gray-200">
-                <th class="p-4 font-semibold">Usuario</th>
-                <th class="p-4 font-semibold">Email</th>
-                <th class="p-4 font-semibold">Rol</th>
-                <th class="p-4 font-semibold text-center">Estado</th>
-                <th class="p-4 font-semibold text-center">Acciones</th>
+                <th class="p-3 font-semibold">Usuario</th>
+                <th class="p-3 font-semibold">Email</th>
+                <th class="p-3 font-semibold">Rol</th>
+                <th class="p-3 font-semibold text-center">Estado</th>
+                <th class="p-3 font-semibold text-center">Acciones</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-gray-100">
               <tr *ngFor="let u of usuarios" class="hover:bg-gray-50 transition-colors">
-                <td class="p-4">
-                  <div class="flex items-center space-x-3">
-                    <div class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs uppercase">
+                <td class="p-3">
+                  <div class="flex items-center space-x-2">
+                    <div class="w-7 h-7 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs uppercase shrink-0">
                       {{ u.username.charAt(0) }}
                     </div>
                     <span class="font-bold text-gray-800 text-sm">{{ u.username }}</span>
                   </div>
                 </td>
-                <td class="p-4 text-sm text-gray-600">{{ u.email }}</td>
-                <td class="p-4">
-                  <span class="px-2 py-1 text-xs font-bold rounded-md" 
+                <td class="p-3 text-xs text-gray-600">{{ u.email }}</td>
+                <td class="p-3">
+                  <span class="px-2 py-1 text-xs font-bold rounded-md"
                         [ngClass]="{'bg-purple-100 text-purple-700': u.rol === 'ADMIN', 'bg-blue-100 text-blue-700': u.rol === 'USER'}">
                     {{ u.rol }}
                   </span>
                 </td>
-                <td class="p-4 text-center">
+                <td class="p-3 text-center">
                   <span class="px-2 py-1 text-xs font-bold rounded-md"
                         [ngClass]="{'bg-green-100 text-green-700': u.activo, 'bg-red-100 text-red-700': !u.activo}">
                     {{ u.activo ? 'Activo' : 'Suspendido' }}
                   </span>
                 </td>
-                <td class="p-4 text-center space-x-2">
-                 <button 
-                    (click)="cambiarRol(u)"
-                    class="text-xs font-bold underline transition-colors"
-                    [ngClass]="u.rol === 'ADMIN' ? 'text-orange-500 hover:text-orange-700' : 'text-blue-600 hover:text-blue-800'"
-                    [title]="u.rol === 'ADMIN' ? 'Revocar administrador' : 'Hacer administrador'">
-                    {{ u.rol === 'ADMIN' ? 'Quitar Admin' : 'Promover' }}
+                <td class="p-3 text-center space-x-2">
+                  <button (click)="cambiarRol(u)" class="text-xs font-bold underline transition-colors"
+                    [ngClass]="u.rol === 'ADMIN' ? 'text-orange-500' : 'text-blue-600'">
+                    {{ u.rol === 'ADMIN' ? 'Quitar' : 'Promover' }}
                   </button>
-                  <button 
-                    (click)="alternarEstado(u)"
-                    class="text-xs font-bold underline transition-colors"
-                    [ngClass]="u.activo ? 'text-red-500 hover:text-red-700' : 'text-green-600 hover:text-green-800'"
-                    [title]="u.activo ? 'Desactivar cuenta' : 'Activar cuenta'">
+                  <button (click)="alternarEstado(u)" class="text-xs font-bold underline transition-colors"
+                    [ngClass]="u.activo ? 'text-red-500' : 'text-green-600'">
                     {{ u.activo ? 'Suspender' : 'Activar' }}
                   </button>
                 </td>
               </tr>
             </tbody>
           </table>
-          
-          <div *ngIf="usuarios.length === 0" class="p-8 text-center text-gray-500">
-            Cargando usuarios...
-          </div>
+          <div *ngIf="usuarios.length === 0" class="p-8 text-center text-gray-500">Cargando usuarios...</div>
         </div>
       </div>
 
-
-
+      <!-- Vista Auditoría -->
       <div *ngIf="vistaActual === 'auditoria'" class="animate-fade-in">
-        <h2 class="text-3xl font-bold text-gray-800 mb-6">Registro de Actividad</h2>
-
-        <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200 mb-6 flex flex-col md:flex-row gap-4 items-end animate-fade-in">
-          
-          <div class="w-full md:w-1/3">
-            <label class="block text-xs font-bold text-gray-600 mb-1 uppercase tracking-wide">ID Usuario</label>
-            <input type="text" [(ngModel)]="filtrosAudit.usuario_id" placeholder="Ej: 123e4567-e89b..." 
-                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+        <h2 class="text-2xl md:text-3xl font-bold text-gray-800 mb-4">Registro de Actividad</h2>
+        <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 mb-4 flex flex-col gap-3">
+          <div class="flex flex-col sm:flex-row gap-3">
+            <div class="flex-1">
+              <label class="block text-xs font-bold text-gray-600 mb-1 uppercase">ID Usuario</label>
+              <input type="text" [(ngModel)]="filtrosAudit.usuario_id" placeholder="Ej: 123e4567..."
+                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+            </div>
+            <div class="flex-1">
+              <label class="block text-xs font-bold text-gray-600 mb-1 uppercase">Acción</label>
+              <select [(ngModel)]="filtrosAudit.accion"
+                      class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white">
+                <option value="">Todas</option>
+                <option value="LOGIN_EXITOSO">Login</option>
+                <option value="CREAR_POST">Crear Post</option>
+                <option value="ELIMINAR_POST">Eliminar Post</option>
+                <option value="POST_BLOQUEADO">Bloquear Post</option>
+                <option value="POST_APROBADO">Aprobar Post</option>
+                <option value="CAMBIO_DE_ROL">Cambio de Rol</option>
+              </select>
+            </div>
+            <div class="flex-1">
+              <label class="block text-xs font-bold text-gray-600 mb-1 uppercase">Fecha</label>
+              <input type="date" [(ngModel)]="filtrosAudit.fecha"
+                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+            </div>
           </div>
-
-          <div class="w-full md:w-1/4">
-            <label class="block text-xs font-bold text-gray-600 mb-1 uppercase tracking-wide">Acción</label>
-            <select [(ngModel)]="filtrosAudit.accion" 
-                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white">
-              <option value="">Todas las acciones</option>
-              <option value="LOGIN_EXITOSO">Login</option>
-              <option value="CREAR_POST">Crear Post</option>
-              <option value="ELIMINAR_POST">Eliminar Post</option>
-              <option value="POST_BLOQUEADO">Bloquear Post</option>
-              <option value="POST_APROBADO">Aprobar Post</option>
-              <option value="CAMBIO_DE_ROL">Cambio de Rol</option>
-            </select>
+          <div class="flex gap-2">
+            <button (click)="aplicarFiltrosAuditoria()" class="flex-1 py-2 bg-blue-600 text-white text-sm font-bold rounded-lg hover:bg-blue-700">Filtrar</button>
+            <button (click)="limpiarFiltrosAuditoria()" class="flex-1 py-2 bg-gray-100 text-gray-600 text-sm font-bold rounded-lg border border-gray-300">Limpiar</button>
           </div>
-
-          <div class="w-full md:w-1/4">
-            <label class="block text-xs font-bold text-gray-600 mb-1 uppercase tracking-wide">Fecha</label>
-            <input type="date" [(ngModel)]="filtrosAudit.fecha" 
-                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
-          </div>
-
-          <div class="flex gap-2 w-full md:w-auto">
-            <button (click)="aplicarFiltrosAuditoria()" 
-                    class="flex-1 md:flex-none px-6 py-2 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition-colors shadow-sm">
-              Filtrar
-            </button>
-            <button (click)="limpiarFiltrosAuditoria()" 
-                    class="flex-1 md:flex-none px-6 py-2 bg-gray-100 text-gray-600 font-bold rounded-lg hover:bg-gray-200 border border-gray-300 transition-colors">
-              Limpiar
-            </button>
-          </div>
-
         </div>
-        
-        
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-          <table class="w-full text-left border-collapse">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-x-auto">
+          <table class="w-full text-left border-collapse min-w-[500px]">
             <thead>
               <tr class="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider border-b border-gray-200">
-                <th class="p-4 font-semibold">Fecha y Hora</th>
-                <th class="p-4 font-semibold">ID Usuario</th>
-                <th class="p-4 font-semibold">Acción</th>
-                <th class="p-4 font-semibold">Detalles</th>
-                <th class="p-4 font-semibold">IP Origen</th>
+                <th class="p-3 font-semibold">Fecha</th>
+                <th class="p-3 font-semibold">Acción</th>
+                <th class="p-3 font-semibold">Detalles</th>
+                <th class="p-3 font-semibold">IP</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-gray-100 text-sm">
-              <tr *ngFor="let log of logsAuditoria" class="hover:bg-gray-50 transition-colors">
-                <td class="p-4 text-gray-500 whitespace-nowrap">
-                  {{ log.fecha_accion | date:'short' }}
-                </td>
-                <td class="p-4 font-mono text-gray-600">{{ log.usuario_id }}</td>
-                <td class="p-4">
-                  <span class="px-2 py-1 text-xs font-bold rounded-md bg-gray-100 text-gray-700">
-                    {{ log.accion }}
-                  </span>
-                </td>
-                <td class="p-4 text-gray-600 truncate max-w-xs" [title]="log.detalles">
-                  {{ log.detalles }}
-                </td>
-                <td class="p-4 font-mono text-xs text-gray-400">
-                  {{ log.ip_origen || 'Desconocida' }}
-                </td>
+              <tr *ngFor="let log of logsAuditoria" class="hover:bg-gray-50">
+                <td class="p-3 text-xs text-gray-500 whitespace-nowrap">{{ log.fecha_accion | date:'short' }}</td>
+                <td class="p-3"><span class="px-2 py-1 text-xs font-bold rounded-md bg-gray-100 text-gray-700">{{ log.accion }}</span></td>
+                <td class="p-3 text-xs text-gray-600 truncate max-w-[150px]" [title]="log.detalles">{{ log.detalles }}</td>
+                <td class="p-3 font-mono text-xs text-gray-400">{{ log.ip_origen || 'N/A' }}</td>
               </tr>
             </tbody>
           </table>
-          
-          <div *ngIf="logsAuditoria.length === 0" class="p-8 text-center text-gray-500">
-            No hay registros de auditoría disponibles.
-          </div>
+          <div *ngIf="logsAuditoria.length === 0" class="p-8 text-center text-gray-500">No hay registros disponibles.</div>
         </div>
       </div>
 
+      <!-- Vista Moderación -->
       <div *ngIf="vistaActual === 'moderacion'" class="animate-fade-in">
-        
-        <div class="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
-          <h2 class="text-3xl font-bold text-gray-800">Centro de Moderación</h2>
-          
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-3">
+          <h2 class="text-2xl md:text-3xl font-bold text-gray-800">Moderación</h2>
           <div class="flex bg-gray-200 p-1 rounded-lg self-start">
-            <button (click)="subVistaModeracion = 'posts'" 
-                    class="px-4 py-2 text-sm font-bold rounded-md transition-all duration-200"
-                    [ngClass]="subVistaModeracion === 'posts' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'">
-              Publicaciones
+            <button (click)="subVistaModeracion = 'posts'"
+                    class="px-3 py-1.5 text-sm font-bold rounded-md transition-all"
+                    [ngClass]="subVistaModeracion === 'posts' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500'">
+              Posts
             </button>
-            <button (click)="subVistaModeracion = 'palabras'" 
-                    class="px-4 py-2 text-sm font-bold rounded-md transition-all duration-200"
-                    [ngClass]="subVistaModeracion === 'palabras' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'">
-              Filtro de Palabras
+            <button (click)="subVistaModeracion = 'palabras'"
+                    class="px-3 py-1.5 text-sm font-bold rounded-md transition-all"
+                    [ngClass]="subVistaModeracion === 'palabras' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500'">
+              Palabras
             </button>
           </div>
         </div>
 
-        <div *ngIf="subVistaModeracion === 'posts'" class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-          <table class="w-full text-left border-collapse">
+        <div *ngIf="subVistaModeracion === 'posts'" class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-x-auto">
+          <table class="w-full text-left border-collapse min-w-[400px]">
             <thead>
               <tr class="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider border-b border-gray-200">
-                <th class="p-4 font-semibold">Post / Contenido</th>
-                <th class="p-4 font-semibold">Autor</th>
-                <th class="p-4 font-semibold text-center">Estado</th>
-                <th class="p-4 font-semibold text-center">Acciones</th>
+                <th class="p-3 font-semibold">Post</th>
+                <th class="p-3 font-semibold">Estado</th>
+                <th class="p-3 font-semibold text-center">Acciones</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-gray-100">
-              <tr *ngFor="let post of publicacionesModeracion" class="hover:bg-gray-50 transition-colors">
-                <td class="p-4">
-                  <div class="flex items-center space-x-3">
-                    <div class="w-12 h-12 bg-gray-200 rounded-md overflow-hidden shrink-0">
-                      <img [src]="post.url_imagen" alt="Post" class="w-full h-full object-cover" 
+              <tr *ngFor="let post of publicacionesModeracion" class="hover:bg-gray-50">
+                <td class="p-3">
+                  <div class="flex items-center space-x-2">
+                    <div class="w-10 h-10 bg-gray-200 rounded-md overflow-hidden shrink-0">
+                      <img [src]="post.url_imagen" alt="Post" class="w-full h-full object-cover"
                            onerror="this.src='https://via.placeholder.com/150?text=Error'">
                     </div>
                     <div>
-                      <p class="text-sm text-gray-800 font-medium line-clamp-2" [title]="post.descripcion">
-                        {{ post.descripcion || 'Sin descripción' }}
-                      </p>
-                      <p class="text-xs text-gray-400 mt-1">{{ post.fecha_publicacion | date:'short' }}</p>
+                      <p class="text-xs text-gray-800 font-medium line-clamp-2">{{ post.descripcion || 'Sin descripción' }}</p>
+                      <p class="text-xs text-gray-400">@{{ post.username }}</p>
                     </div>
                   </div>
                 </td>
-                <td class="p-4 text-sm text-gray-600 font-bold">@{{ post.username }}</td>
-                <td class="p-4 text-center">
+                <td class="p-3">
                   <span class="px-2 py-1 text-xs font-bold rounded-md"
                         [ngClass]="{
                           'bg-yellow-100 text-yellow-700': post.estado_moderacion === 'PENDIENTE',
                           'bg-green-100 text-green-700': post.estado_moderacion === 'APROBADO',
                           'bg-red-100 text-red-700': post.estado_moderacion === 'BLOQUEADO'
-                        }">
-                    {{ post.estado_moderacion }}
-                  </span>
+                        }">{{ post.estado_moderacion }}</span>
                 </td>
-                <td class="p-4 text-center space-x-3">
-                  <button *ngIf="post.estado_moderacion !== 'APROBADO'" 
-                          (click)="cambiarEstadoPost(post, 'APROBADO')"
-                          class="text-xs text-green-600 hover:text-green-800 font-bold underline" title="Aprobar post">
-                    Aprobar
-                  </button>
-                  <button *ngIf="post.estado_moderacion !== 'BLOQUEADO'" 
-                          (click)="cambiarEstadoPost(post, 'BLOQUEADO')"
-                          class="text-xs text-red-500 hover:text-red-700 font-bold underline" title="Bloquear post">
-                    Bloquear
-                  </button>
+                <td class="p-3 text-center space-x-2">
+                  <button *ngIf="post.estado_moderacion !== 'APROBADO'" (click)="cambiarEstadoPost(post, 'APROBADO')"
+                          class="text-xs text-green-600 font-bold underline">Aprobar</button>
+                  <button *ngIf="post.estado_moderacion !== 'BLOQUEADO'" (click)="cambiarEstadoPost(post, 'BLOQUEADO')"
+                          class="text-xs text-red-500 font-bold underline">Bloquear</button>
                 </td>
               </tr>
-              </tbody>
+            </tbody>
           </table>
-          <div *ngIf="publicacionesModeracion.length === 0" class="p-8 text-center text-gray-500">
-            Cargando cola de moderación... (Datos de prueba)
-          </div>
+          <div *ngIf="publicacionesModeracion.length === 0" class="p-8 text-center text-gray-500">Sin publicaciones pendientes.</div>
         </div>
 
-        <div *ngIf="subVistaModeracion === 'palabras'" class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 animate-fade-in">
-          <h3 class="text-lg font-bold text-gray-800 mb-2">Lista Negra de Palabras y Hashtags</h3>
-          <p class="text-sm text-gray-500 mb-6">Cualquier publicación que contenga estas palabras será bloqueada o enviada a revisión automáticamente.</p>
-          
-          <div class="flex gap-3 mb-6 max-w-md">
-            <input type="text" [(ngModel)]="nuevaPalabra" 
-                   (keyup.enter)="agregarNuevaPalabra()" 
-                   placeholder="Ej: fraude, #spam..." 
-                   class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-            <button (click)="agregarNuevaPalabra()" 
-                    class="px-4 py-2 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition-colors">
-              Añadir
-            </button>
+        <div *ngIf="subVistaModeracion === 'palabras'" class="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+          <h3 class="text-base font-bold text-gray-800 mb-1">Lista Negra</h3>
+          <p class="text-xs text-gray-500 mb-4">Publicaciones con estas palabras serán bloqueadas automáticamente.</p>
+          <div class="flex gap-2 mb-4">
+            <input type="text" [(ngModel)]="nuevaPalabra" (keyup.enter)="agregarNuevaPalabra()"
+                   placeholder="Ej: fraude, #spam..."
+                   class="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <button (click)="agregarNuevaPalabra()" class="px-4 py-2 bg-blue-600 text-white text-sm font-bold rounded-lg hover:bg-blue-700">Añadir</button>
           </div>
-
           <div class="flex flex-wrap gap-2">
-            <div *ngFor="let palabra of palabrasProhibidas" 
-                 class="group flex items-center bg-gray-100 border border-gray-200 rounded-full px-3 py-1">
+            <div *ngFor="let palabra of palabrasProhibidas" class="flex items-center bg-gray-100 border border-gray-200 rounded-full px-3 py-1">
               <span class="text-sm text-gray-700 font-medium">{{ palabra }}</span>
-              
-              <button (click)="quitarPalabra(palabra)" class="ml-2 text-gray-400 hover:text-red-500 focus:outline-none transition-colors">
+              <button (click)="quitarPalabra(palabra)" class="ml-2 text-gray-400 hover:text-red-500">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
             </div>
-            
-            <div *ngIf="palabrasProhibidas.length === 0" class="text-sm text-gray-400 italic">
-              La lista negra está vacía.
-            </div>
+            <div *ngIf="palabrasProhibidas.length === 0" class="text-sm text-gray-400 italic">Lista vacía.</div>
           </div>
         </div>
-
       </div>
 
     </div>
   </main>
+
+  <!-- Bottom nav móvil -->
+  <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-gray-900 border-t border-gray-700 flex z-50">
+    <button (click)="cambiarVista('usuarios')" class="flex-1 flex flex-col items-center py-2 text-xs transition-colors"
+            [ngClass]="vistaActual === 'usuarios' ? 'text-blue-400' : 'text-gray-400'">
+      <span class="text-xl">👥</span>
+      <span>Usuarios</span>
+    </button>
+    <button (click)="cambiarVista('auditoria')" class="flex-1 flex flex-col items-center py-2 text-xs transition-colors"
+            [ngClass]="vistaActual === 'auditoria' ? 'text-blue-400' : 'text-gray-400'">
+      <span class="text-xl">📋</span>
+      <span>Auditoría</span>
+    </button>
+    <button (click)="cambiarVista('moderacion')" class="flex-1 flex flex-col items-center py-2 text-xs transition-colors"
+            [ngClass]="vistaActual === 'moderacion' ? 'text-blue-400' : 'text-gray-400'">
+      <span class="text-xl">🛡️</span>
+      <span>Moderación</span>
+    </button>
+  </nav>
+
 </div>

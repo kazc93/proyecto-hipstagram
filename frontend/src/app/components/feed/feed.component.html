@@ -2,32 +2,36 @@
   
   <nav class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
     <div class="max-w-5xl mx-auto px-4 py-3 flex justify-between items-center">
-      <h1 class="text-2xl font-extrabold text-hipstagram-primary tracking-tight">Hipstagram</h1>
-      
+      <h1 class="text-xl sm:text-2xl font-extrabold text-hipstagram-primary tracking-tight">Hipstagram</h1>
+
       <div class="hidden sm:block relative">
-        <input 
-          type="text" 
-          [(ngModel)]="terminoBusqueda" 
-          (keyup.enter)="buscar()"
-          placeholder="Buscar hashtags o texto..." 
+        <input type="text" [(ngModel)]="terminoBusqueda" (keyup.enter)="buscar()"
+          placeholder="Buscar hashtags o texto..."
           class="bg-gray-100 rounded-md px-4 py-1.5 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-hipstagram-secondary w-64 transition-all">
-        
-        <button 
-          *ngIf="terminoBusqueda"
-          (click)="limpiarBusqueda()"
-          class="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-red-500 font-bold text-sm px-1 flex items-center justify-center transition-colors"
-          title="Limpiar búsqueda">
-          ✕
-        </button>
+        <button *ngIf="terminoBusqueda" (click)="limpiarBusqueda()"
+          class="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-red-500 font-bold text-sm px-1">✕</button>
       </div>
 
-      <div class="flex items-center space-x-4">
-        <button (click)="irAPerfil()" class="text-sm font-semibold text-gray-500 hover:text-hipstagram-primary transition-colors">
-          Mi Perfil
+      <div class="flex items-center space-x-2 sm:space-x-4">
+        <button (click)="irAPerfil()" class="flex flex-col sm:flex-row items-center text-gray-500 hover:text-hipstagram-primary transition-colors">
+          <span class="text-xl sm:hidden">👤</span>
+          <span class="text-xs sm:text-sm font-semibold hidden sm:block">Mi Perfil</span>
         </button>
-        <button (click)="cerrarSesion()" class="text-sm font-semibold text-gray-500 hover:text-red-500 transition-colors">
-          Cerrar Sesión
+        <button (click)="cerrarSesion()" class="flex flex-col sm:flex-row items-center text-gray-500 hover:text-red-500 transition-colors">
+          <span class="text-xl sm:hidden">🚪</span>
+          <span class="text-xs sm:text-sm font-semibold hidden sm:block">Cerrar Sesión</span>
         </button>
+      </div>
+    </div>
+
+    <!-- Barra de búsqueda móvil -->
+    <div class="sm:hidden px-4 pb-3">
+      <div class="relative">
+        <input type="text" [(ngModel)]="terminoBusqueda" (keyup.enter)="buscar()"
+          placeholder="Buscar hashtags o texto..."
+          class="w-full bg-gray-100 rounded-full px-4 py-2 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-hipstagram-secondary">
+        <button *ngIf="terminoBusqueda" (click)="limpiarBusqueda()"
+          class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm">✕</button>
       </div>
     </div>
   </nav>
