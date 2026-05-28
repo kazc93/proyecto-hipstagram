@@ -63,7 +63,7 @@ export const login = async (req: Request, res: Response) => {
         // 1. Access Token (Corto: 15 minutos para mayor seguridad)
         const token = jwt.sign(
             { id: user.id, rol: user.rol },
-            process.env.JWT_SECRET || 'secret',
+            process.env.JWT_SECRET || 'hipstagram_jwt_secret_2026',
             { expiresIn: '15m' }
         );
 
@@ -115,7 +115,7 @@ export const refresh = async (req: Request, res: Response) => {
         // 3. Generar un NUEVO Access Token fresquito por otros 15 minutos
         const newAccessToken = jwt.sign(
             { id: payload.id, rol: usuario.rol },
-            process.env.JWT_SECRET || 'secret',
+            process.env.JWT_SECRET || 'hipstagram_jwt_secret_2026',
             { expiresIn: '15m' }
         );
 

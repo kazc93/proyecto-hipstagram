@@ -12,7 +12,7 @@ const verificarToken = (req: AuthRequest, res: Response, next: NextFunction) => 
     try {
         const verified = jwt.verify(
             token.replace('Bearer ', ''), 
-            process.env.JWT_SECRET as string
+            process.env.JWT_SECRET || 'hipstagram_jwt_secret_2026'
         );
         req.user = verified as { id: string; rol: string };
         next();

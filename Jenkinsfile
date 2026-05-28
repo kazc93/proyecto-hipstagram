@@ -126,6 +126,7 @@ pipeline {
                             printf 'DB_NAME=hipstagram_db\\n'         >> .env.prod
                             printf 'DB_USER=hipstagram_admin\\n'      >> .env.prod
                             printf 'DB_PASSWORD=%s\\n' '${DB_PASS}'  >> .env.prod
+                            printf 'JWT_SECRET=hipstagram_jwt_secret_2026\\n' >> .env.prod
 
                             # Crear .env vacíos por servicio (las vars reales vienen de .env.prod)
                             for dir in backend/auth-service backend/post-service backend/audit-service backend/interactions-service backend/search-service backend/user-service backend/media-service backend/moderation-service backend/api-gateway; do

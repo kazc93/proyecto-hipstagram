@@ -16,7 +16,7 @@ const verificarToken = (req: AuthRequest, res: Response, next: NextFunction) => 
 
     try {
         // Verificamos el token con la misma clave secreta que usas para firmarlo
-        const verified = jwt.verify(token, process.env.JWT_SECRET || 'tu_clave_secreta_aqui');
+        const verified = jwt.verify(token, process.env.JWT_SECRET || 'hipstagram_jwt_secret_2026');
         req.user = verified;
         next(); // El token es válido, lo dejamos pasar a la ruta
     } catch (err) {
