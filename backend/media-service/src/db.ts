@@ -12,6 +12,7 @@ const pool = new Pool({
     password: process.env.DB_PASSWORD,
     // Convertimos a entero ya que process.env siempre devuelve strings
     port: parseInt(process.env.DB_PORT || '5432'),
+    ssl: { rejectUnauthorized: false },
 });
 
 pool.on('connect', () => {
