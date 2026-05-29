@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, AfterViewInit, ElementRef, ViewChild } from '@angular/core';
+import { Component, OnInit, OnDestroy, AfterViewInit, ElementRef, ViewChild, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
@@ -31,7 +31,8 @@ export class FeedComponent implements OnInit, OnDestroy, AfterViewInit {
   constructor(
     private authService: AuthService,
     private postService: PostService,
-    private router: Router
+    private router: Router,
+    private ngZone: NgZone
   ) {}
 
   ngOnInit(): void {
@@ -41,7 +42,9 @@ export class FeedComponent implements OnInit, OnDestroy, AfterViewInit {
   ngAfterViewInit(): void {
     this.observer = new IntersectionObserver((entries) => {
       if (entries[0].isIntersecting && !this.cargandoMas && this.hayMasPosts) {
-        this.cargarMas();
+        // NgZone.run() es necesario porque IntersectionObserver corre fuera
+        // de la zona de Angular y sin esto se genera NG0900
+        this.ngZone.run(() => this.cargarMas());
       }
     }, { threshold: 0.1 });
     if (this.sentinel) this.observer.observe(this.sentinel.nativeElement);
@@ -53,14 +56,20 @@ export class FeedComponent implements OnInit, OnDestroy, AfterViewInit {
 
   cargarFeed() {
     this.paginaActual = 1;
-    this.hayMasPosts = true;
+    this.hayMasPosts = false;   // Bloquea cargarMas() mientras recargamos
+    this.cargandoMas = true;    // Evita que el observer dispare durante la carga inicial
     this.postService.obtenerFeed(1, this.limitPorPagina).subscribe({
       next: (res) => {
         const data = res.posts ?? res;
         this.publicaciones = data;
-        if (data.length < this.limitPorPagina) this.hayMasPosts = false;
+        this.hayMasPosts = data.length >= this.limitPorPagina;
+        this.cargandoMas = false;
       },
-      error: (err) => console.error('Error al cargar el feed', err)
+      error: (err) => {
+        console.error('Error al cargar el feed', err);
+        this.cargandoMas = false;
+        this.hayMasPosts = false;
+      }
     });
   }
 
