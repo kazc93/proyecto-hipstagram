@@ -67,7 +67,7 @@ export class FeedComponent implements OnInit, OnDestroy, AfterViewInit {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (res) => {
-          const data = res.posts ?? res;
+          const data = res.posts ?? res.data ?? (Array.isArray(res) ? res : []);
           this.publicaciones = data;
           this.hayMasPosts = data.length >= this.limitPorPagina;
           this.cargandoMas = false;
@@ -88,7 +88,7 @@ export class FeedComponent implements OnInit, OnDestroy, AfterViewInit {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (res) => {
-          const data = res.posts ?? res;
+          const data = res.posts ?? res.data ?? (Array.isArray(res) ? res : []);
           if (data.length === 0) {
             this.hayMasPosts = false;
           } else {
