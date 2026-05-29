@@ -55,4 +55,12 @@ export class PostService {
     return this.http.delete(`${this.apiUrl}/posts/delete/${id}`);
   }
 
+  obtenerExplorar(page: number = 1, limit: number = 15): Observable<any> {
+    return this.http.get(`${this.apiUrl}/posts/explore?page=${page}&limit=${limit}`);
+  }
+
+  obtenerComentarios(postId: string, page: number = 1, limit: number = 5): Observable<any> {
+    return this.http.get(`${this.apiUrl}/posts/${postId}/comments?page=${page}&limit=${limit}`);
+  }
+
 }
