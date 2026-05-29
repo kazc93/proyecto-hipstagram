@@ -60,11 +60,11 @@ export const login = async (req: Request, res: Response) => {
             { actor_role: user.rol, entity_type: 'SESION', entity_id: user.id!.toString(), result: 'EXITO' });
 
         // --- LÓGICA DE TOKENS (ACTUALIZADA) ---
-        // 1. Access Token (Corto: 15 minutos para mayor seguridad)
+        // 1. Access Token (8 horas — suficiente para una sesión de trabajo sin molestar al usuario)
         const token = jwt.sign(
             { id: user.id, rol: user.rol },
             process.env.JWT_SECRET || 'hipstagram_jwt_secret_2026',
-            { expiresIn: '15m' }
+            { expiresIn: '8h' }
         );
 
         // 2. Refresh Token (Largo: 7 días para no molestar al usuario)

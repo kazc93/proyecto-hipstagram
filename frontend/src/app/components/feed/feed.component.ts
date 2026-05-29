@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { AuthService } from '../../services/auth/auth.service';
 import { PostService } from '../../services/post/post.service';
 
@@ -27,6 +29,7 @@ export class FeedComponent implements OnInit, OnDestroy, AfterViewInit {
 
   @ViewChild('sentinel') sentinel!: ElementRef;
   private observer!: IntersectionObserver;
+  private destroy$ = new Subject<void>();
 
   constructor(
     private authService: AuthService,
@@ -51,58 +54,66 @@ export class FeedComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
     if (this.observer) this.observer.disconnect();
   }
 
   cargarFeed() {
     this.paginaActual = 1;
-    this.hayMasPosts = false;   // Bloquea cargarMas() mientras recargamos
-    this.cargandoMas = true;    // Evita que el observer dispare durante la carga inicial
-    this.postService.obtenerFeed(1, this.limitPorPagina).subscribe({
-      next: (res) => {
-        const data = res.posts ?? res;
-        this.publicaciones = data;
-        this.hayMasPosts = data.length >= this.limitPorPagina;
-        this.cargandoMas = false;
-      },
-      error: (err) => {
-        console.error('Error al cargar el feed', err);
-        this.cargandoMas = false;
-        this.hayMasPosts = false;
-      }
-    });
+    this.hayMasPosts = false;
+    this.cargandoMas = true;
+    this.postService.obtenerFeed(1, this.limitPorPagina)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (res) => {
+          const data = res.posts ?? res;
+          this.publicaciones = data;
+          this.hayMasPosts = data.length >= this.limitPorPagina;
+          this.cargandoMas = false;
+        },
+        error: (err) => {
+          console.error('Error al cargar el feed', err);
+          this.cargandoMas = false;
+          this.hayMasPosts = false;
+        }
+      });
   }
 
   cargarMas() {
     if (this.cargandoMas || !this.hayMasPosts) return;
     this.cargandoMas = true;
     const siguientePagina = this.paginaActual + 1;
-    this.postService.obtenerFeed(siguientePagina, this.limitPorPagina).subscribe({
-      next: (res) => {
-        const data = res.posts ?? res;
-        if (data.length === 0) {
-          this.hayMasPosts = false;
-        } else {
-          this.publicaciones = [...this.publicaciones, ...data];
-          this.paginaActual = siguientePagina;
-          if (data.length < this.limitPorPagina) this.hayMasPosts = false;
+    this.postService.obtenerFeed(siguientePagina, this.limitPorPagina)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (res) => {
+          const data = res.posts ?? res;
+          if (data.length === 0) {
+            this.hayMasPosts = false;
+          } else {
+            this.publicaciones = [...this.publicaciones, ...data];
+            this.paginaActual = siguientePagina;
+            if (data.length < this.limitPorPagina) this.hayMasPosts = false;
+          }
+          this.cargandoMas = false;
+        },
+        error: (err) => {
+          console.error('Error al cargar más posts', err);
+          this.cargandoMas = false;
         }
-        this.cargandoMas = false;
-      },
-      error: (err) => {
-        console.error('Error al cargar más posts', err);
-        this.cargandoMas = false;
-      }
-    });
+      });
   }
 
   seleccionarImagen(event: any) {
     const file = event.target.files[0];
     if (file) {
       this.archivoSeleccionado = file;
-      // Crear vista previa para el usuario
       const reader = new FileReader();
-      reader.onload = e => this.vistaPreviaImagen = reader.result;
+      // FileReader corre fuera de Angular zone — wrapeamos para evitar NG0900
+      reader.onload = () => this.ngZone.run(() => {
+        this.vistaPreviaImagen = reader.result;
+      });
       reader.readAsDataURL(file);
     }
   }
@@ -118,49 +129,50 @@ export class FeedComponent implements OnInit, OnDestroy, AfterViewInit {
     formData.append('image', this.archivoSeleccionado);
     formData.append('descripcion', this.nuevoTexto);
 
-    this.postService.crearPublicacion(formData).subscribe({
-      next: (respuesta) => {
-        // Limpiamos el formulario
-        this.nuevoTexto = '';
-        this.archivoSeleccionado = null;
-        this.vistaPreviaImagen = null;
-        // Recargamos el feed para ver la nueva foto
-        this.cargarFeed();
-      },
-      error: (err) => console.error('Error al publicar', err)
-    });
+    this.postService.crearPublicacion(formData)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.nuevoTexto = '';
+          this.archivoSeleccionado = null;
+          this.vistaPreviaImagen = null;
+          this.cargarFeed();
+        },
+        error: (err) => console.error('Error al publicar', err)
+      });
   }
 
- 
-
   votar(postId: string, tipo: number) {
-  this.postService.votar(postId, tipo).subscribe({
-    next: () => this.cargarFeed(), // Recargamos para ver el nuevo conteo
-    error: (err) => alert('Ya has votado en esta publicación')
-  });
-}
-// 3. Agrega la función para enviar el comentario
+    this.postService.votar(postId, tipo)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => this.cargarFeed(),
+        error: () => alert('Ya has votado en esta publicación')
+      });
+  }
+
   enviarComentario(postId: string, texto: string) {
-    if (!texto.trim()) return; // Evita enviar comentarios vacíos
+    if (!texto.trim()) return;
     
-    this.postService.comentar(postId, texto).subscribe({
-      next: () => {
-        console.log('Comentario publicado');
-        this.cargarFeed(); // Recarga para ver el comentario si lo muestras en el feed
-      },
-      error: (err) => console.error('Error al comentar', err)
-    });
+    this.postService.comentar(postId, texto)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => this.cargarFeed(),
+        error: (err) => console.error('Error al comentar', err)
+      });
   }
 
   terminoBusqueda: string = '';
 
-buscar() {
-  if (!this.terminoBusqueda.trim()) {
-    this.cargarFeed();
-    return;
-  }
-  this.postService.buscarPosts(this.terminoBusqueda).subscribe({
-    next: (data) => this.publicaciones = data,
+  buscar() {
+    if (!this.terminoBusqueda.trim()) {
+      this.cargarFeed();
+      return;
+    }
+    this.postService.buscarPosts(this.terminoBusqueda)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (data) => this.publicaciones = data,
     error: (err) => console.error(err)
   });
 }
@@ -192,7 +204,9 @@ buscar() {
   eliminarPost(postId: string) {
     if (!confirm('¿Eliminar esta publicación?')) return;
     const id = String(postId).trim();
-    this.postService.eliminarPost(id).subscribe({
+    this.postService.eliminarPost(id)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
       next: () => this.cargarFeed(),
       error: (err: HttpErrorResponse) => {
         const body = err.error as { message?: string } | null;
