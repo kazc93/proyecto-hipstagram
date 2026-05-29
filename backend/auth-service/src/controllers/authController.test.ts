@@ -4,7 +4,7 @@ jest.mock('jsonwebtoken', () => ({ sign: jest.fn().mockReturnValue('mock_token')
 jest.mock('../services/auditHelper', () => ({ sendToAudit: jest.fn().mockResolvedValue(undefined) }));
 
 import { Request, Response } from 'express';
-import { register, login, refresh } from './authController';
+import { register, login, refresh, resetPassword } from './authController';
 import pool from '../config/db';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
@@ -67,14 +67,14 @@ describe('AuthController', () => {
 
   // ───────────── login ─────────────
   describe('login', () => {
-    it('retorna access token y refresh token para credenciales válidas', async () => {
+    it('retorna access token y refresh token usando email como identifier', async () => {
       mockPool.query
         .mockResolvedValueOnce({ rows: [mockUser] } as any)   // SELECT usuario
         .mockResolvedValueOnce({ rows: [] } as any);           // UPDATE refresh_token
       (bcrypt.compare as jest.Mock).mockResolvedValue(true);
 
       const { res, json } = buildRes();
-      await login(buildReq({ email: 'test@test.com', password: '123' }) as Request, res);
+      await login(buildReq({ identifier: 'test@test.com', password: '123' }) as Request, res);
 
       expect(json).toHaveBeenCalledWith(
         expect.objectContaining({ token: 'mock_token', refreshToken: 'mock_token' }),
@@ -82,11 +82,25 @@ describe('AuthController', () => {
       expect(mockSendToAudit).toHaveBeenCalledWith('uuid-test-1', 'LOGIN_EXITOSO', expect.any(String), undefined, expect.objectContaining({ entity_type: 'SESION', result: 'EXITO' }));
     });
 
+    it('retorna access token y refresh token usando username como identifier', async () => {
+      mockPool.query
+        .mockResolvedValueOnce({ rows: [mockUser] } as any)
+        .mockResolvedValueOnce({ rows: [] } as any);
+      (bcrypt.compare as jest.Mock).mockResolvedValue(true);
+
+      const { res, json } = buildRes();
+      await login(buildReq({ identifier: 'testuser', password: '123' }) as Request, res);
+
+      expect(json).toHaveBeenCalledWith(
+        expect.objectContaining({ token: 'mock_token', refreshToken: 'mock_token' }),
+      );
+    });
+
     it('retorna 401 y audita LOGIN_FALLIDO cuando el usuario no existe', async () => {
       mockPool.query.mockResolvedValueOnce({ rows: [] } as any);
 
       const { res, status } = buildRes();
-      await login(buildReq({ email: 'noexiste@test.com', password: '123' }) as Request, res);
+      await login(buildReq({ identifier: 'noexiste@test.com', password: '123' }) as Request, res);
 
       expect(status).toHaveBeenCalledWith(401);
       expect(mockSendToAudit).toHaveBeenCalledWith(null, 'LOGIN_FALLIDO', expect.any(String), undefined, expect.objectContaining({ result: 'FALLO' }));
@@ -97,7 +111,7 @@ describe('AuthController', () => {
       (bcrypt.compare as jest.Mock).mockResolvedValue(false);
 
       const { res, status } = buildRes();
-      await login(buildReq({ email: 'test@test.com', password: 'wrong' }) as Request, res);
+      await login(buildReq({ identifier: 'test@test.com', password: 'wrong' }) as Request, res);
 
       expect(status).toHaveBeenCalledWith(401);
       expect(mockSendToAudit).toHaveBeenCalledWith('uuid-test-1', 'LOGIN_FALLIDO', expect.any(String), undefined, expect.objectContaining({ result: 'FALLO' }));
@@ -107,7 +121,7 @@ describe('AuthController', () => {
       mockPool.query.mockResolvedValueOnce({ rows: [{ ...mockUser, activo: false }] } as any);
 
       const { res, status } = buildRes();
-      await login(buildReq({ email: 'test@test.com', password: '123' }) as Request, res);
+      await login(buildReq({ identifier: 'test@test.com', password: '123' }) as Request, res);
 
       expect(status).toHaveBeenCalledWith(403);
       expect(mockSendToAudit).not.toHaveBeenCalled();
@@ -117,7 +131,42 @@ describe('AuthController', () => {
       mockPool.query.mockRejectedValueOnce(new Error('DB error'));
 
       const { res, status } = buildRes();
-      await login(buildReq({ email: 'test@test.com', password: '123' }) as Request, res);
+      await login(buildReq({ identifier: 'test@test.com', password: '123' }) as Request, res);
+
+      expect(status).toHaveBeenCalledWith(500);
+    });
+  });
+
+  // ───────────── resetPassword ─────────────
+  describe('resetPassword', () => {
+    it('retorna 404 si email y username no coinciden con ningún usuario', async () => {
+      mockPool.query.mockResolvedValueOnce({ rows: [] } as any);
+
+      const { res, status, json } = buildRes();
+      await resetPassword(buildReq({ email: 'x@x.com', username: 'nadie', nuevaPassword: '123' }) as Request, res);
+
+      expect(status).toHaveBeenCalledWith(404);
+      expect(json).toHaveBeenCalledWith({ message: 'No se encontró un usuario con esos datos' });
+    });
+
+    it('actualiza la contraseña y responde con mensaje de éxito', async () => {
+      mockPool.query
+        .mockResolvedValueOnce({ rows: [{ id: 'uuid-test-1' }] } as any)  // SELECT
+        .mockResolvedValueOnce({ rows: [] } as any);                        // UPDATE
+      (bcrypt.genSalt as jest.Mock).mockResolvedValue('salt');
+      (bcrypt.hash as jest.Mock).mockResolvedValue('nuevohash');
+
+      const { res, json } = buildRes();
+      await resetPassword(buildReq({ email: 'test@test.com', username: 'testuser', nuevaPassword: 'nueva123' }) as Request, res);
+
+      expect(json).toHaveBeenCalledWith({ message: 'Contraseña actualizada correctamente' });
+    });
+
+    it('retorna 500 si la base de datos falla', async () => {
+      mockPool.query.mockRejectedValueOnce(new Error('DB error'));
+
+      const { res, status } = buildRes();
+      await resetPassword(buildReq({ email: 'test@test.com', username: 'testuser', nuevaPassword: '123' }) as Request, res);
 
       expect(status).toHaveBeenCalledWith(500);
     });

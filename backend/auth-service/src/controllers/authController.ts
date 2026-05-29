@@ -33,11 +33,15 @@ export const register = async (req: Request, res: Response) => {
 };
 
 export const login = async (req: Request, res: Response) => {
-    const { email, password } = req.body;
+    // Aceptamos email o nombre de usuario indistintamente
+    const { identifier, password } = req.body;
     try {
-        const result = await pool.query("SELECT * FROM usuarios WHERE email = $1", [email]);
+        const result = await pool.query(
+            "SELECT * FROM usuarios WHERE email = $1 OR username = $1",
+            [identifier]
+        );
         if (result.rows.length === 0) {
-            await sendToAudit(null, 'LOGIN_FALLIDO', `Intento fallido para email: ${email}`, req.headers['x-correlation-id'] as string,
+            await sendToAudit(null, 'LOGIN_FALLIDO', `Intento fallido para: ${identifier}`, req.headers['x-correlation-id'] as string,
                 { actor_role: 'DESCONOCIDO', entity_type: 'SESION', result: 'FALLO' });
             return res.status(401).json({ message: "Credenciales incorrectas" });
         }
@@ -86,6 +90,31 @@ export const login = async (req: Request, res: Response) => {
             refreshToken, // Nuevo campo para el refresh token
             user: { username: user.username, rol: user.rol } 
         });
+    } catch (err: any) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
+// --- CONTROLADOR: RESET DE CONTRASEÑA ---
+// No requiere servicio de email: verifica identidad por email + username
+export const resetPassword = async (req: Request, res: Response) => {
+    const { email, username, nuevaPassword } = req.body;
+    try {
+        // Requiere que email Y username coincidan con el mismo usuario
+        const result = await pool.query(
+            "SELECT id FROM usuarios WHERE email = $1 AND username = $2",
+            [email, username]
+        );
+        if (result.rows.length === 0) {
+            return res.status(404).json({ message: "No se encontró un usuario con esos datos" });
+        }
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(nuevaPassword, salt);
+        await pool.query(
+            "UPDATE usuarios SET password_hash = $1 WHERE id = $2",
+            [hashedPassword, result.rows[0].id]
+        );
+        res.json({ message: "Contraseña actualizada correctamente" });
     } catch (err: any) {
         res.status(500).json({ error: err.message });
     }

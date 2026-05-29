@@ -13,10 +13,14 @@ export class AuthService {
   // Inyectamos el HttpClient para poder hacer peticiones
   constructor(private http: HttpClient) { }
 
-  // Método para hacer login
+  // Método para hacer login (acepta email o username como identifier)
   login(credenciales: any): Observable<any> {
-    // Esto hará un POST a http://localhost:8080/auth/login
     return this.http.post(`${this.apiUrl}/auth/login`, credenciales);
+  }
+
+  // Método para resetear contraseña sin email (verifica email + username)
+  resetearPassword(datos: { email: string; username: string; nuevaPassword: string }): Observable<any> {
+    return this.http.post(`${this.apiUrl}/auth/reset-password`, datos);
   }
 
   // NUEVO: Método para registrar un usuario
