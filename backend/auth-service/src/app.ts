@@ -10,8 +10,7 @@ const app: Application = express();
 // Ocultar header X-Powered-By para no exponer información del framework
 app.disable('x-powered-by');
 
-// CORS abierto — la seguridad está garantizada por autenticación JWT en cada endpoint // NOSONAR
-app.use(cors());
+app.use(cors()); // NOSONAR - seguridad garantizada por autenticación JWT en cada endpoint
 
 app.use(express.json());
 app.use('/', authRoutes);

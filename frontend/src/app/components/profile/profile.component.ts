@@ -16,6 +16,8 @@ export class ProfileComponent implements OnInit {
   posts: any[] = [];
   loading = true;
   totalPosts = 0;
+  username = '';
+  totalLikes = 0;
 
   private apiUrl = environment.apiUrl;
 
@@ -37,6 +39,8 @@ export class ProfileComponent implements OnInit {
       next: (res: any) => {
         this.posts = res.data;
         this.totalPosts = res.total;
+        this.username = res.data[0]?.username || localStorage.getItem('username') || '';
+        this.totalLikes = res.data.reduce((sum: number, p: any) => sum + (p.likes || 0), 0);
         this.loading = false;
       },
       error: (err) => {

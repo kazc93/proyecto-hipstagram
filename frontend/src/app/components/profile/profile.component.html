@@ -7,14 +7,31 @@
     </button>
   </div>
 
-  <div class="max-w-2xl mx-auto py-6 px-4">
+  <div class="max-w-2xl mx-auto py-8 px-4">
 
     <!-- Info del perfil -->
-    <div class="flex items-center gap-4 mb-6">
-      <div class="w-16 h-16 rounded-full bg-hipstagram-primary text-white flex items-center justify-center text-3xl font-bold">📸</div>
-      <div>
-        <h2 class="text-xl font-bold text-gray-800">Mis Publicaciones</h2>
-        <p class="text-sm text-gray-500"><strong>{{ totalPosts }}</strong> publicaciones</p>
+    <div class="flex items-center gap-6 mb-8">
+
+      <!-- Avatar con inicial -->
+      <div class="w-20 h-20 rounded-full bg-hipstagram-primary text-white flex items-center justify-center text-3xl font-bold shrink-0">
+        {{ username ? username.charAt(0).toUpperCase() : '?' }}
+      </div>
+
+      <!-- Datos del usuario -->
+      <div class="flex-1">
+        <h2 class="text-xl font-bold text-gray-800 mb-3">{{ username || 'Usuario' }}</h2>
+
+        <!-- Estadísticas -->
+        <div class="flex gap-6 text-center">
+          <div>
+            <p class="font-bold text-gray-800 text-lg">{{ totalPosts }}</p>
+            <p class="text-xs text-gray-500">publicaciones</p>
+          </div>
+          <div>
+            <p class="font-bold text-gray-800 text-lg">{{ totalLikes }}</p>
+            <p class="text-xs text-gray-500">likes totales</p>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -22,11 +39,17 @@
 
     <!-- Grid de posts -->
     <div *ngIf="!loading; else loadingTemplate" class="grid grid-cols-3 gap-1">
-      <div *ngFor="let post of posts" class="relative aspect-square overflow-hidden bg-gray-200 rounded-sm">
+      <div *ngFor="let post of posts"
+           class="relative aspect-square overflow-hidden bg-gray-200 rounded-sm cursor-pointer group">
         <img [src]="post.url_imagen" [alt]="post.descripcion" class="w-full h-full object-cover">
-        <div class="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-40 transition-all flex items-center justify-center opacity-0 hover:opacity-100 gap-3 text-white font-bold text-sm">
-          <span>❤️ {{ post.likes }}</span>
-          <span>💬 {{ post.total_comentarios }}</span>
+
+        <!-- Overlay con info al hacer hover -->
+        <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all flex flex-col items-center justify-center gap-2 opacity-0 group-hover:opacity-100 text-white">
+          <div class="flex gap-4 font-bold text-sm">
+            <span>❤️ {{ post.likes || 0 }}</span>
+            <span>💬 {{ post.total_comentarios || 0 }}</span>
+          </div>
+          <p class="text-xs text-center px-2 line-clamp-2 max-w-full">{{ post.descripcion }}</p>
         </div>
       </div>
     </div>
@@ -37,7 +60,7 @@
     </div>
 
     <ng-template #loadingTemplate>
-      <div class="text-center py-16 text-gray-400">Cargando galería...</div>
+      <div class="text-center py-16 text-gray-400 animate-pulse">Cargando galería...</div>
     </ng-template>
 
   </div>
