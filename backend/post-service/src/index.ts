@@ -8,6 +8,7 @@ import verificarToken, { AuthRequest } from './authMiddleware';
 import * as dotenv from 'dotenv';
 import AWS from 'aws-sdk';
 import { extractHashtags } from './helpers/hashtagParser';
+import { DoublyLinkedList } from './structures/DoublyLinkedList';
 
 dotenv.config();
 
@@ -167,7 +168,9 @@ app.get('/', async (req, res) => {
             LIMIT $1 OFFSET $2
         `, [limit, offset]);
 
-        res.json({ page, limit, data: result.rows });
+        // Cargar los posts en una lista doblemente enlazada como buffer en memoria
+        const feedList = new DoublyLinkedList<any>().fromArray(result.rows);
+        res.json({ page, limit, data: feedList.toArray() });
     } catch (err: any) {
         console.error("Error al obtener feed:", err);
         res.status(500).json({ error: "No se pudo cargar el feed" });
@@ -200,7 +203,8 @@ app.get('/explore', async (req, res) => {
             LIMIT $1 OFFSET $2
         `, [limit, offset]);
 
-        res.json({ page, limit, data: result.rows });
+        const explorarList = new DoublyLinkedList<any>().fromArray(result.rows);
+        res.json({ page, limit, data: explorarList.toArray() });
     } catch (err: any) {
         console.error("Error al obtener explorar:", err);
         res.status(500).json({ error: "No se pudo cargar explorar" });

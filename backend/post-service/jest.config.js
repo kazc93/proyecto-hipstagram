@@ -7,6 +7,7 @@ module.exports = {
   },
   collectCoverageFrom: [
     'src/helpers/**/*.ts',
+    'src/structures/**/*.ts',
     'src/authMiddleware.ts',
     '!src/**/*.test.ts',
   ],
