@@ -46,18 +46,18 @@ describe('Auth API — Integración', () => {
 
   // ── CORS ─────────────────────────────────────────────────────────────────
   describe('CORS', () => {
-    it('permite requests desde orígenes autorizados', async () => {
+    it('permite requests desde cualquier origen (seguridad por JWT)', async () => {
       const res = await request(app)
         .get('/health')
         .set('Origin', 'https://main.dyer5iztb0u8h.amplifyapp.com');
       expect(res.status).toBe(200);
     });
 
-    it('rechaza requests desde orígenes no autorizados', async () => {
+    it('permite requests desde APK móvil (capacitor://localhost)', async () => {
       const res = await request(app)
         .get('/health')
-        .set('Origin', 'https://sitio-malicioso.com');
-      expect(res.status).toBe(500);
+        .set('Origin', 'capacitor://localhost');
+      expect(res.status).toBe(200);
     });
   });
 
