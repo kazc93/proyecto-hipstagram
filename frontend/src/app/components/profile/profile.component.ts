@@ -40,7 +40,7 @@ export class ProfileComponent implements OnInit {
         this.posts = res.data;
         this.totalPosts = res.total;
         this.username = res.data[0]?.username || localStorage.getItem('username') || '';
-        this.totalLikes = res.data.reduce((sum: number, p: any) => sum + (p.likes || 0), 0);
+        this.totalLikes = res.data.reduce((sum: number, p: any) => sum + Number(p.likes || 0), 0);
         this.loading = false;
       },
       error: (err) => {
