@@ -44,6 +44,23 @@ describe('Auth API — Integración', () => {
     });
   });
 
+  // ── CORS ─────────────────────────────────────────────────────────────────
+  describe('CORS', () => {
+    it('permite requests desde orígenes autorizados', async () => {
+      const res = await request(app)
+        .get('/health')
+        .set('Origin', 'https://main.dyer5iztb0u8h.amplifyapp.com');
+      expect(res.status).toBe(200);
+    });
+
+    it('rechaza requests desde orígenes no autorizados', async () => {
+      const res = await request(app)
+        .get('/health')
+        .set('Origin', 'https://sitio-malicioso.com');
+      expect(res.status).toBe(500);
+    });
+  });
+
   // ── POST /register ──────────────────────────────────────────────────────
   describe('POST /register', () => {
     it('registra un usuario y devuelve 201 con los datos creados', async () => {
