@@ -1,4 +1,3 @@
-// src/index.ts
 import express, { Application, Request, Response } from 'express';
 import cors from 'cors';
 import pool from './config/db';
@@ -6,19 +5,17 @@ import verificarToken, { AuthRequest } from './authMiddleware';
 import dotenv from 'dotenv';
 import auditRoutes from './routes/auditRoutes';
 
-// Cargar variables de entorno
 dotenv.config();
 
 const app: Application = express();
 
-// Middlewares
 app.use(express.json());
 app.use(cors());
 
-// Rutas 
+// Rutas de escritura de logs de auditoría
 app.use('/', auditRoutes);
 
-// --- RUTA ÚNICA: OBTENER LOGS DE AUDITORÍA CON FILTROS ---
+// Consulta el historial de auditoría con filtros opcionales por usuario, acción y fecha
 app.get(['/', '/audit'], verificarToken, async (req: AuthRequest, res: Response) => {
     if (req.user?.rol !== 'ADMIN') return res.status(403).send("No autorizado");
 

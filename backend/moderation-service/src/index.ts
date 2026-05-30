@@ -9,6 +9,7 @@ import AWS from 'aws-sdk';
 
 const AUDIT_URL = process.env.AUDIT_SERVICE_URL || 'http://audit-service:3003/log';
 
+// Envía evento de auditoría de forma asíncrona
 const logAudit = (usuario_id: string, accion: string, detalles: string, extras: object, correlationId?: string) => {
     axios.post(AUDIT_URL, { usuario_id, accion, detalles, ip_origen: 'moderation-service', ...extras },
         { headers: { 'x-correlation-id': correlationId || 'SIN-RASTREO' } }
@@ -21,16 +22,16 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-// CONFIGURACIÓN DE AWS REKOGNITION
+// Configura el cliente de AWS Rekognition para análisis de imágenes
 const rekognition = new AWS.Rekognition({
     accessKeyId: process.env.AWS_ACCESS_KEY_ID,
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
     region: process.env.AWS_REGION || 'us-east-1'
 });
 
-// Ruta donde se guardará nuestro archivo JSON físico
 const FILE_PATH = path.join(__dirname, 'bannedWords.json');
 
+// Lee la lista de palabras prohibidas desde el archivo JSON
 const readWords = (): string[] => {
     if (!fs.existsSync(FILE_PATH)) {
         fs.writeFileSync(FILE_PATH, JSON.stringify(['spam', 'fraude', 'insulto_ejemplo']));
@@ -39,17 +40,18 @@ const readWords = (): string[] => {
     return JSON.parse(data);
 };
 
+// Persiste la lista de palabras prohibidas en el archivo JSON
 const writeWords = (words: string[]) => {
     fs.writeFileSync(FILE_PATH, JSON.stringify(words, null, 2));
 };
 
-// --- RUTA: OBTENER PALABRAS ---
+// Devuelve la lista actual de palabras prohibidas (solo ADMIN)
 app.get('/words', verificarToken, (req: AuthRequest, res: Response) => {
     if (req.user?.rol !== 'ADMIN') return res.status(403).json({ message: "Acceso denegado" });
     res.json(readWords());
 });
 
-// --- RUTA: AGREGAR PALABRA ---
+// Agrega una nueva palabra a la lista de palabras prohibidas (solo ADMIN)
 app.post('/words', verificarToken, (req: AuthRequest, res: Response) => {
     if (req.user?.rol !== 'ADMIN') return res.status(403).json({ message: "Acceso denegado" });
     const { palabra } = req.body;
@@ -67,7 +69,7 @@ app.post('/words', verificarToken, (req: AuthRequest, res: Response) => {
         req.headers['x-correlation-id'] as string);
 });
 
-// --- RUTA: ELIMINAR PALABRA ---
+// Elimina una palabra de la lista de palabras prohibidas (solo ADMIN)
 app.delete('/words/:word', verificarToken, (req: AuthRequest, res: Response) => {
     if (req.user?.rol !== 'ADMIN') return res.status(403).json({ message: "Acceso denegado" });
     const wordToDelete = String(req.params.word).toLowerCase();
@@ -81,29 +83,29 @@ app.delete('/words/:word', verificarToken, (req: AuthRequest, res: Response) => 
         req.headers['x-correlation-id'] as string);
 });
 
-// MIDDLEWARE DE TRAZABILIDAD (Mantiene el gafete que viene del Gateway)
+// Imprime el ID de trazabilidad en cada petición entrante
 app.use((req, res, next) => {
     const correlationId = req.headers['x-correlation-id'] || 'SIN-RASTREO';
     console.log(`[TraceID: ${correlationId}] Ejecutando Moderation-Service: ${req.method} ${req.url}`);
     next();
 });
 
-// --- RUTA: COMPROBAR TEXTO E IMAGEN (Usada por el post-service) ---
+// Evalúa el texto e imagen de un post aplicando filtro de palabras y análisis con Rekognition
 app.post(['/check', '/moderation/check'], async (req: Request, res: Response) => {
     const { text, imageUrl, key } = req.body;
     const correlationId = req.headers['x-correlation-id'] || 'SIN-RASTREO';
-    
+
     console.log(`[TraceID: ${correlationId}] --- PROCESO DE MODERACIÓN ---`);
-    
+
     let isClean = true;
     let details: string[] = [];
 
-    // 1. MODERACIÓN DE TEXTO (Tu lógica original con JSON)
+    // Moderación de texto: busca coincidencias contra la lista de palabras prohibidas
     if (text) {
         const bannedWords = readWords();
         const lowerText = String(text).toLowerCase();
         const badWordFound = bannedWords.find((banned: string) => lowerText.includes(banned.toLowerCase().trim()));
-        
+
         if (badWordFound) {
             console.log(`[TraceID: ${correlationId}] ⚠️ BLOQUEADO TEXTO: Se encontró [${badWordFound}]`);
             isClean = false;
@@ -111,16 +113,13 @@ app.post(['/check', '/moderation/check'], async (req: Request, res: Response) =>
         }
     }
 
-    // 2. MODERACIÓN DE IMAGEN (Con AWS Rekognition)
-    // Solo evalúa si nos mandaron una imagen y si el S3 está configurado en el .env
+    // Moderación de imagen: analiza el contenido visual con AWS Rekognition
     if (isClean && imageUrl && imageUrl.includes('amazonaws.com') && process.env.AWS_BUCKET_NAME) {
         try {
-            // Extraer el nombre real del archivo en S3. 
-            // Si le pasaste 'key' desde el post-service, úsalo, sino extráelo de la URL
-            const s3ObjectName = key || imageUrl.split('/').pop(); 
+            const s3ObjectName = key || imageUrl.split('/').pop();
 
             console.log(`[TraceID: ${correlationId}] Analizando imagen en AWS S3: ${s3ObjectName}`);
-            
+
             const params = {
                 Image: {
                     S3Object: {
@@ -128,30 +127,25 @@ app.post(['/check', '/moderation/check'], async (req: Request, res: Response) =>
                         Name: s3ObjectName
                     }
                 },
-                MinConfidence: 75 // Sensibilidad del 75%
+                MinConfidence: 75
             };
 
             const response = await rekognition.detectModerationLabels(params).promise();
-            
+
             if (response.ModerationLabels && response.ModerationLabels.length > 0) {
                 console.log(`[TraceID: ${correlationId}] 🚨 BLOQUEADO IMAGEN: AWS detectó contenido inapropiado:`, response.ModerationLabels);
                 isClean = false;
-                // Guardamos la etiqueta principal (Ej: Explicit Nudity) para el reporte
                 details.push(`Contenido visual reportado por IA: ${response.ModerationLabels[0].Name}`);
             } else {
                 console.log(`[TraceID: ${correlationId}] ✅ IMAGEN LIMPIA según AWS`);
             }
         } catch (error: any) {
             console.error(`[TraceID: ${correlationId}] ❌ Error conectando con AWS Rekognition:`, error.message);
-            // Si falla Amazon, no bloqueamos la app, pero dejamos registro
             details.push('Error al analizar la imagen con IA');
         }
     }
 
-    res.json({ 
-        clean: isClean,
-        details: details
-    });
+    res.json({ clean: isClean, details });
 });
 
 app.get('/health', (_req, res) => res.status(200).json({ status: 'ok' }));

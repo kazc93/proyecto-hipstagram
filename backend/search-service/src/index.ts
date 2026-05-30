@@ -2,7 +2,6 @@ import express, { Response } from 'express';
 import cors from 'cors';
 import pool from './db';
 import * as dotenv from 'dotenv';
-// Nota: Puedes importar verificarToken si quieres que solo usuarios logueados busquen
 
 dotenv.config();
 
@@ -10,8 +9,7 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-// --- RUTA: BUSCAR POSTS POR TEXTO O HASHTAG ---
-// El API Gateway manda /search/posts hacia aquí, por defecto llega como /posts
+// Busca publicaciones por texto o hashtag usando coincidencia parcial insensible a mayúsculas
 app.get('/posts', async (req, res: Response) => {
     const termino = req.query.q as string;
 
@@ -20,18 +18,15 @@ app.get('/posts', async (req, res: Response) => {
     }
 
     try {
-        // Usamos la misma mega-consulta del feed, pero agregamos un WHERE con ILIKE
-        // ILIKE busca el texto sin importar mayúsculas/minúsculas. 
-        // Si el usuario busca "#viaje", encontrará las descripciones que tengan "#viaje".
         const searchQuery = `%${termino}%`;
 
         const result = await pool.query(`
-            SELECT 
-                p.id, 
-                p.usuario_id, 
-                p.url_imagen, 
-                p.descripcion, 
-                p.fecha_publicacion, 
+            SELECT
+                p.id,
+                p.usuario_id,
+                p.url_imagen,
+                p.descripcion,
+                p.fecha_publicacion,
                 u.username,
                 COALESCE((SELECT SUM(tipo_voto) FROM votos WHERE publicacion_id = p.id), 0) AS likes,
                 COALESCE((

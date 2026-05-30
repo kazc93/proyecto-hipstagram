@@ -17,20 +17,20 @@ const s3 = new AWS.S3({
     region: process.env.AWS_REGION
 });
 
-
 const app = express();
 app.use(express.json());
 app.use(cors());
-// MIDDLEWARE PARA IMPRIMIR LA TRAZABILIDAD
+
+// Imprime el ID de trazabilidad en cada petición entrante
 app.use((req, res, next) => {
     const correlationId = req.headers['x-correlation-id'] || 'SIN-RASTREO';
     console.log(`[TraceID: ${correlationId}] Ejecutando Post-Service: ${req.method} ${req.url}`);
     next();
 });
+
 app.use('/uploads', express.static('uploads'));
 
-
-// Configuración de Multer
+// Usa almacenamiento en S3 si hay credenciales configuradas, de lo contrario guarda en disco
 const useS3 = !!(process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY && process.env.AWS_BUCKET_NAME);
 
 const storage = useS3
@@ -41,25 +41,22 @@ const storage = useS3
     });
 const upload = multer({ storage });
 
-
-// --- RUTA: SUBIR POST ---
-// --- RUTA: SUBIR POST ---
+// Sube una imagen, modera el contenido, extrae hashtags y crea la publicación
 app.post('/upload', verificarToken, upload.single('image'), async (req: AuthRequest, res: Response) => {
     const { descripcion } = req.body;
     const usuario_id = req.user?.id;
-    
+
     if (!req.file) return res.status(400).send("No se subió ninguna imagen");
 
-try {
-        // Generamos un nombre único para S3 usando la marca de tiempo y el nombre original del archivo
+    try {
         const s3FileName = `${Date.now()}-${req.file.originalname}`;
 
-        // 1. Subir a S3 o guardar localmente
+        // Sube la imagen a S3 o guarda localmente según la configuración
         let imageUrl: string;
         if (useS3) {
             const params = {
                 Bucket: process.env.AWS_BUCKET_NAME!,
-                Key: s3FileName, // <--- Usamos la variable aquí
+                Key: s3FileName,
                 Body: req.file.buffer,
                 ContentType: req.file.mimetype
             };
@@ -70,19 +67,19 @@ try {
             imageUrl = `${process.env.PUBLIC_URL || 'https://54.234.8.66.nip.io'}/posts/uploads/${filename}`;
         }
 
-        // 2. LÓGICA DE MODERACIÓN AUTOMÁTICA
-        let estadoInicial = 'APROBADO'; // Por defecto
+        // Envía texto e imagen al moderation-service para validar el contenido
+        let estadoInicial = 'APROBADO';
         try {
-            const modResponse = await axios.post('http://moderation-service:3008/check', { 
+            const modResponse = await axios.post('http://moderation-service:3008/check', {
                 text: descripcion,
-                imageUrl: imageUrl, 
-                key: s3FileName // <--- Usamos LA MISMA variable exacta aquí
+                imageUrl: imageUrl,
+                key: s3FileName
             }, {
                 headers: { 'x-correlation-id': req.headers['x-correlation-id'] || 'SIN-RASTREO' }
             });
-            
+
             estadoInicial = modResponse.data.clean ? 'APROBADO' : 'PENDIENTE';
-            
+
             if (!modResponse.data.clean) {
                 console.log(`[TraceID: ${req.headers['x-correlation-id']}] Post marcado como PENDIENTE. Razón:`, modResponse.data.details);
             }
@@ -90,14 +87,14 @@ try {
             console.error("⚠️ Error llamando a Moderación (Check):", e.message);
         }
 
-        // 3. Guardar en Postgres con el estado de moderación incluido
+        // Guarda la publicación en la base de datos con su estado de moderación
         const result = await pool.query(
             "INSERT INTO publicaciones (usuario_id, url_imagen, descripcion, estado_moderacion) VALUES ($1, $2, $3, $4) RETURNING *",
             [usuario_id, imageUrl, descripcion, estadoInicial]
         );
         const nuevaPublicacion = result.rows[0];
 
-        // 4. LÓGICA DE HASHTAGS
+        // Extrae y asocia los hashtags de la descripción a la publicación
         const hashtags = extractHashtags(descripcion);
 
         if (hashtags.length > 0) {
@@ -115,11 +112,9 @@ try {
             }
         }
 
-        // 5. ENVIAR RESPUESTA AL USUARIO
         const msg = estadoInicial === 'APROBADO' ? "Publicación creada exitosamente" : "Post en revisión por contenido";
         res.status(201).json({ message: msg, post: nuevaPublicacion });
 
-        // 6. NOTIFICAR A AUDITORÍA
         axios.post('http://audit-service:3003/log', {
             usuario_id,
             accion: 'CREAR_POST',
@@ -133,10 +128,9 @@ try {
     }
 });
 
-// --- RUTA: OBTENER TODOS LOS POSTS (FEED PAGINADO) ---
+// Devuelve el feed paginado ordenado por hashtags, likes y fecha (solo posts aprobados)
 app.get('/', async (req, res) => {
     try {
-        // 1. Recibir parámetros de paginación
         const page = parseInt(req.query.page as string) || 1;
         const limit = parseInt(req.query.limit as string) || 10;
         const offset = (page - 1) * limit;
@@ -179,43 +173,39 @@ app.get('/', async (req, res) => {
     }
 });
 
-// --- RUTA: MODO EXPLORAR (TOP LIKES PAGINADO) ---
+// Devuelve el feed de exploración paginado ordenado exclusivamente por popularidad
 app.get('/explore', async (req, res) => {
     try {
         const page = parseInt(req.query.page as string) || 1;
-        const limit = parseInt(req.query.limit as string) || 15; // Explorar suele mostrar más imágenes
+        const limit = parseInt(req.query.limit as string) || 15;
         const offset = (page - 1) * limit;
 
         const result = await pool.query(`
-            SELECT 
-                p.id, 
-                p.usuario_id, 
-                p.url_imagen, 
-                p.descripcion, 
-                p.fecha_publicacion, 
+            SELECT
+                p.id,
+                p.usuario_id,
+                p.url_imagen,
+                p.descripcion,
+                p.fecha_publicacion,
                 u.username,
                 COALESCE((SELECT SUM(tipo_voto) FROM votos WHERE publicacion_id = p.id), 0) AS likes
             FROM publicaciones p
             LEFT JOIN usuarios u ON p.usuario_id = u.id
             WHERE p.estado_moderacion = 'APROBADO'
-            ORDER BY 
-                likes DESC,               -- Orden exclusivo por popularidad
+            ORDER BY
+                likes DESC,
                 p.fecha_publicacion DESC
             LIMIT $1 OFFSET $2
         `, [limit, offset]);
-        
-        res.json({
-            page,
-            limit,
-            data: result.rows
-        });
+
+        res.json({ page, limit, data: result.rows });
     } catch (err: any) {
         console.error("Error al obtener explorar:", err);
         res.status(500).json({ error: "No se pudo cargar explorar" });
     }
 });
 
-// --- RUTA: OBTENER COMENTARIOS DE UN POST (PAGINADOS) ---
+// Devuelve los comentarios paginados de una publicación específica
 app.get('/:id/comments', async (req, res) => {
     try {
         const postId = req.params.id;
@@ -223,49 +213,39 @@ app.get('/:id/comments', async (req, res) => {
         const limit = parseInt(req.query.limit as string) || 10;
         const offset = (page - 1) * limit;
 
-        // 1. Obtener los comentarios con el nombre del usuario
         const result = await pool.query(`
             SELECT c.texto, c.usuario_id, u.username
             FROM comentarios c
             JOIN usuarios u ON c.usuario_id = u.id
             WHERE c.publicacion_id = $1::uuid
-            ORDER BY c.texto DESC -- Cambiar 'texto' por 'fecha' o 'id' si tu tabla comentarios tiene un campo de fecha o id serial
+            ORDER BY c.texto DESC
             LIMIT $2 OFFSET $3
         `, [postId, limit, offset]);
 
-        // 2. Contar el total para que Angular sepa si hay más páginas
         const countResult = await pool.query(`SELECT COUNT(*) FROM comentarios WHERE publicacion_id = $1::uuid`, [postId]);
         const total = parseInt(countResult.rows[0].count);
 
-        res.json({
-            page,
-            limit,
-            total,
-            data: result.rows
-        });
+        res.json({ page, limit, total, data: result.rows });
     } catch (err: any) {
         console.error("Error al obtener comentarios:", err);
         res.status(500).json({ error: "No se pudieron cargar los comentarios" });
     }
 });
 
-// --- RUTA: OBTENER PUBLICACIONES DE UN USUARIO ESPECÍFICO (PERFIL PAGINADO) ---
+// Devuelve las publicaciones aprobadas de un usuario para su perfil
 app.get('/user/:userId', async (req, res) => {
     try {
         const { userId } = req.params;
-        
-        // Parámetros opcionales de paginación por si el usuario tiene muchas fotos
         const page = parseInt(req.query.page as string) || 1;
-        const limit = parseInt(req.query.limit as string) || 12; 
+        const limit = parseInt(req.query.limit as string) || 12;
         const offset = (page - 1) * limit;
 
-        // Consulta SQL limpia para extraer solo el contenido aprobado de este usuario
         const result = await pool.query(`
-            SELECT 
-                p.id, 
-                p.usuario_id, 
-                p.url_imagen, 
-                p.descripcion, 
+            SELECT
+                p.id,
+                p.usuario_id,
+                p.url_imagen,
+                p.descripcion,
                 p.fecha_publicacion,
                 COALESCE((SELECT SUM(tipo_voto) FROM votos WHERE publicacion_id = p.id), 0) AS likes,
                 COALESCE((SELECT COUNT(*) FROM comentarios WHERE publicacion_id = p.id), 0) AS total_comentarios
@@ -275,28 +255,21 @@ app.get('/user/:userId', async (req, res) => {
             LIMIT $2 OFFSET $3
         `, [userId, limit, offset]);
 
-        // Contamos el total para ayudarle al Frontend con el scroll o paginación
         const countResult = await pool.query(`
-            SELECT COUNT(*) FROM publicaciones 
+            SELECT COUNT(*) FROM publicaciones
             WHERE usuario_id = $1::uuid AND estado_moderacion = 'APROBADO'
         `, [userId]);
-        
+
         const total = parseInt(countResult.rows[0].count);
 
-        res.json({
-            page,
-            limit,
-            total,
-            data: result.rows
-        });
+        res.json({ page, limit, total, data: result.rows });
     } catch (err: any) {
         console.error("Error al obtener publicaciones del perfil:", err);
         res.status(500).json({ error: "No se pudieron cargar las publicaciones del perfil" });
     }
 });
 
-
-// --- RUTA: ELIMINAR POST ---
+// Elimina una publicación solo si pertenece al usuario autenticado
 app.delete('/delete/:id', verificarToken, async (req: AuthRequest, res: Response) => {
     const { id } = req.params;
     const usuario_id = req.user?.id != null ? String(req.user.id) : undefined;
@@ -330,14 +303,11 @@ app.delete('/delete/:id', verificarToken, async (req: AuthRequest, res: Response
     }
 });
 
-// --- RUTAS DE MODERACIÓN (Solo ADMIN) ---
-
-// 1. Obtener todas las publicaciones para la tabla del panel
+// Devuelve todas las publicaciones para el panel de moderación (solo ADMIN)
 app.get('/admin/moderation', verificarToken, async (req: AuthRequest, res: Response) => {
     if (req.user?.rol !== 'ADMIN') return res.status(403).json({ message: "Acceso denegado" });
 
     try {
-        // Hacemos un JOIN para traer el nombre del usuario junto con la publicación
         const result = await pool.query(`
             SELECT p.id, p.url_imagen, p.descripcion, p.fecha_publicacion, p.estado_moderacion, u.username
             FROM publicaciones p
@@ -351,11 +321,11 @@ app.get('/admin/moderation', verificarToken, async (req: AuthRequest, res: Respo
     }
 });
 
-// 2. Cambiar el estado de una publicación (Aprobar / Bloquear)
+// Cambia el estado de moderación de una publicación (solo ADMIN)
 app.put('/admin/moderation/:id', verificarToken, async (req: AuthRequest, res: Response) => {
     if (req.user?.rol !== 'ADMIN') return res.status(403).json({ message: "Acceso denegado" });
-    
-    const { estado } = req.body; // Recibimos 'APROBADO' o 'BLOQUEADO'
+
+    const { estado } = req.body;
     const postId = req.params.id;
 
     try {
@@ -366,10 +336,9 @@ app.put('/admin/moderation/:id', verificarToken, async (req: AuthRequest, res: R
 
         res.json({ message: `Publicación marcada como ${estado}` });
 
-        // Guardamos el movimiento en la auditoría
         axios.post('http://audit-service:3003/log', {
             usuario_id: req.user.id,
-            accion: `POST_${estado}`, // Ej: POST_BLOQUEADO
+            accion: `POST_${estado}`,
             detalles: `Admin cambió el estado del post ${postId} a ${estado}`,
             ip_origen: req.ip
         }).catch(err => console.error("Error enviando a auditoría:", err.message));

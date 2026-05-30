@@ -5,6 +5,7 @@ import pool from '../config/db';
 import { IUser } from '../interfaces/User';
 import { sendToAudit } from '../services/auditHelper';
 
+// Registra un nuevo usuario con contraseña hasheada
 export const register = async (req: Request, res: Response) => {
     const { username, email, password, rol } = req.body;
     try {
@@ -32,8 +33,8 @@ export const register = async (req: Request, res: Response) => {
     }
 };
 
+// Autentica al usuario por email o username y devuelve access token y refresh token
 export const login = async (req: Request, res: Response) => {
-    // Aceptamos email o nombre de usuario indistintamente
     const { identifier, password } = req.body;
     try {
         const result = await pool.query(
@@ -63,44 +64,35 @@ export const login = async (req: Request, res: Response) => {
         await sendToAudit(user.id!.toString(), 'LOGIN_EXITOSO', `Sesión iniciada por ${user.username}`, req.headers['x-correlation-id'] as string,
             { actor_role: user.rol, entity_type: 'SESION', entity_id: user.id!.toString(), result: 'EXITO' });
 
-        // --- LÓGICA DE TOKENS (ACTUALIZADA) ---
-        // 1. Access Token (8 horas — suficiente para una sesión de trabajo sin molestar al usuario)
+        // Access Token con duración de 8 horas
         const token = jwt.sign(
             { id: user.id, rol: user.rol },
             process.env.JWT_SECRET || 'hipstagram_jwt_secret_2026',
             { expiresIn: '8h' }
         );
 
-        // 2. Refresh Token (Largo: 7 días para no molestar al usuario)
+        // Refresh Token con duración de 7 días
         const refreshToken = jwt.sign(
             { id: user.id },
             process.env.JWT_REFRESH_SECRET || 'super_secret_refresh',
             { expiresIn: '7d' }
         );
 
-        // 3. Guardamos el Refresh Token en la base de datos
         await pool.query(
             "UPDATE usuarios SET refresh_token = $1 WHERE id = $2",
             [refreshToken, user.id]
         );
 
-        // 4. Enviamos ambos al frontend
-        res.json({ 
-            token, // El Access Token sigue siendo el mismo de antes
-            refreshToken, // Nuevo campo para el refresh token
-            user: { username: user.username, rol: user.rol } 
-        });
+        res.json({ token, refreshToken, user: { username: user.username, rol: user.rol } });
     } catch (err: any) {
         res.status(500).json({ error: err.message });
     }
 };
 
-// --- CONTROLADOR: RESET DE CONTRASEÑA ---
-// No requiere servicio de email: verifica identidad por email + username
+// Verifica identidad por email y username antes de actualizar la contraseña
 export const resetPassword = async (req: Request, res: Response) => {
     const { email, username, nuevaPassword } = req.body;
     try {
-        // Requiere que email Y username coincidan con el mismo usuario
         const result = await pool.query(
             "SELECT id FROM usuarios WHERE email = $1 AND username = $2",
             [email, username]
@@ -120,7 +112,7 @@ export const resetPassword = async (req: Request, res: Response) => {
     }
 };
 
-// --- NUEVO CONTROLADOR: REFRESH TOKEN ---
+// Valida el refresh token y emite un nuevo access token
 export const refresh = async (req: Request, res: Response) => {
     const { refreshToken } = req.body;
 
@@ -129,10 +121,8 @@ export const refresh = async (req: Request, res: Response) => {
     }
 
     try {
-        // 1. Validar matemáticamente si el refresh token no ha caducado
         const payload: any = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET || 'super_secret_refresh');
 
-        // 2. Verificar que este token coincida con el guardado en la base de datos
         const result = await pool.query("SELECT refresh_token, rol FROM usuarios WHERE id = $1", [payload.id]);
 
         if (result.rows.length === 0 || result.rows[0].refresh_token !== refreshToken) {
@@ -141,17 +131,14 @@ export const refresh = async (req: Request, res: Response) => {
 
         const usuario = result.rows[0];
 
-        // 3. Generar un NUEVO Access Token fresquito por otros 15 minutos
         const newAccessToken = jwt.sign(
             { id: payload.id, rol: usuario.rol },
             process.env.JWT_SECRET || 'hipstagram_jwt_secret_2026',
             { expiresIn: '15m' }
         );
 
-        // 4. Entregarlo al frontend
         res.json({ token: newAccessToken });
     } catch (error) {
-        // Si el refresh token caducó, obligamos al usuario a hacer login manual
         res.status(403).json({ message: "Refresh token expirado o inválido. Inicie sesión nuevamente." });
     }
 };

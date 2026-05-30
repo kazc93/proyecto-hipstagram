@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
+// Crea el pool de conexiones a PostgreSQL usando variables de entorno
 const pool = new Pool({
     user: process.env.DB_USER,
     host: process.env.DB_HOST,

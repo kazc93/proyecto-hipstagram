@@ -2,7 +2,6 @@ import axios from 'axios';
 
 const AUDIT_SERVICE_URL = process.env.AUDIT_SERVICE_URL || 'http://localhost:3003/log';
 
-// Agregamos 'correlationId' como parámetro opcional al final
 interface AuditExtras {
     actor_role?: string;
     entity_type?: string;
@@ -11,6 +10,7 @@ interface AuditExtras {
     request_id?: string;
 }
 
+// Envía un evento de auditoría al audit-service con trazabilidad por correlation ID
 export const sendToAudit = async (
     usuario_id: string | null,
     accion: string,

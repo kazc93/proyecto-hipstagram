@@ -7,47 +7,42 @@ import { Observable } from 'rxjs';
   providedIn: 'root'
 })
 export class AuthService {
-  // Tomamos la URL base desde el environment (http://localhost:8080)
   private apiUrl = environment.apiUrl;
 
-  // Inyectamos el HttpClient para poder hacer peticiones
   constructor(private http: HttpClient) { }
 
-  // Método para hacer login (acepta email o username como identifier)
+  // Envía credenciales al backend y obtiene los tokens de sesión
   login(credenciales: any): Observable<any> {
     return this.http.post(`${this.apiUrl}/auth/login`, credenciales);
   }
 
-  // Método para resetear contraseña sin email (verifica email + username)
+  // Solicita el cambio de contraseña verificando email y username
   resetearPassword(datos: { email: string; username: string; nuevaPassword: string }): Observable<any> {
     return this.http.post(`${this.apiUrl}/auth/reset-password`, datos);
   }
 
-  // NUEVO: Método para registrar un usuario
+  // Registra un nuevo usuario en la plataforma
   registro(usuario: any): Observable<any> {
-    // Esto hará un POST a http://localhost:8080/auth/register
     return this.http.post(`${this.apiUrl}/auth/register`, usuario);
   }
 
-  // Verifica si el usuario tiene un token guardado (sesión activa)
+  // Verifica si existe un token activo en el almacenamiento local
   isAuthenticated(): boolean {
     const token = localStorage.getItem('token');
-    // Retorna true si el token existe, false si no existe
-    return !!token; 
+    return !!token;
   }
 
-  // Métodos útiles para manejar el Token en el navegador
-  // Guarda el token en el almacenamiento local del navegador
+  // Persiste el token JWT en el almacenamiento local del navegador
   guardarToken(token: string): void {
     localStorage.setItem('token', token);
   }
 
-  // Recupera el token (lo usaremos más adelante para las peticiones)
+  // Recupera el token JWT del almacenamiento local
   obtenerToken(): string | null {
     return localStorage.getItem('token');
   }
 
-  /** ID del usuario actual desde el payload del JWT (mismo `id` que envía el backend al verificar el token). */
+  // Decodifica el payload del JWT para extraer el ID del usuario autenticado
   obtenerUsuarioId(): string | null {
     const token = this.obtenerToken();
     if (!token) return null;
@@ -64,9 +59,9 @@ export class AuthService {
     }
   }
 
-  // Cierra la sesión eliminando el token y el rol
+  // Elimina el token y el rol del almacenamiento local cerrando la sesión
   logout(): void {
     localStorage.removeItem('token');
-    localStorage.removeItem('rol'); // <-- NUEVO
+    localStorage.removeItem('rol');
   }
 }

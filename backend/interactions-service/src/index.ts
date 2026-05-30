@@ -12,17 +12,17 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-// --- RUTA: VOTAR (LIKE/DISLIKE) ---
+// Registra o actualiza el voto de un usuario en una publicación
 app.post('/voto', verificarToken, async (req: AuthRequest, res: Response) => {
-    const { publicacion_id, tipo_voto } = req.body; 
+    const { publicacion_id, tipo_voto } = req.body;
     const usuario_id = req.user?.id;
 
     try {
         await pool.query(
-            `INSERT INTO votos (usuario_id, publicacion_id, tipo_voto) 
-             VALUES ($1, $2, $3) 
-             ON CONFLICT (usuario_id, publicacion_id) 
-             DO UPDATE SET tipo_voto = EXCLUDED.tipo_voto`, // <-- ESTA ES LA CORRECCIÓN MÁGICA
+            `INSERT INTO votos (usuario_id, publicacion_id, tipo_voto)
+             VALUES ($1, $2, $3)
+             ON CONFLICT (usuario_id, publicacion_id)
+             DO UPDATE SET tipo_voto = EXCLUDED.tipo_voto`,
             [usuario_id, publicacion_id, tipo_voto]
         );
 
@@ -36,12 +36,12 @@ app.post('/voto', verificarToken, async (req: AuthRequest, res: Response) => {
         }).catch(err => console.error("Error en auditoría:", err.message));
 
     } catch (err: any) {
-        console.error("❌ Error de BD al votar:", err.message); // <-- Esto nos dirá qué pasa
+        console.error("❌ Error de BD al votar:", err.message);
         res.status(500).json({ error: "Error al procesar el voto" });
     }
 });
 
-// --- RUTA: COMENTAR ---
+// Valida y guarda un comentario en una publicación
 app.post('/comentar', verificarToken, async (req: AuthRequest, res: Response) => {
     const { publicacion_id, texto } = req.body;
     const usuario_id = req.user?.id;
@@ -69,7 +69,7 @@ app.post('/comentar', verificarToken, async (req: AuthRequest, res: Response) =>
         }).catch(err => console.error("Error en auditoría:", err.message));
 
     } catch (err: any) {
-        console.error("❌ Error de BD al guardar comentario:", err.message); // <-- Esto nos dirá qué pasa
+        console.error("❌ Error de BD al guardar comentario:", err.message);
         res.status(500).json({ error: "Error al guardar comentario" });
     }
 });

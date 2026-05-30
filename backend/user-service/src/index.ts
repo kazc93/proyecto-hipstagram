@@ -11,8 +11,7 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-// --- RUTA NUEVA: OBTENER TODOS LOS USUARIOS (SOLO ADMIN) ---
-// El API Gateway manda las peticiones de /users a la raíz de este servicio ('/')
+// Devuelve la lista completa de usuarios (solo ADMIN)
 app.get('/', verificarToken, async (req: AuthRequest, res: Response) => {
     if (req.user?.rol !== 'ADMIN') {
         return res.status(403).json({ message: "Acceso denegado: Solo para administradores" });
@@ -20,8 +19,8 @@ app.get('/', verificarToken, async (req: AuthRequest, res: Response) => {
 
     try {
         const result = await pool.query(`
-            SELECT id, username, email, rol, activo, fecha_creacion 
-            FROM usuarios 
+            SELECT id, username, email, rol, activo, fecha_creacion
+            FROM usuarios
             ORDER BY fecha_creacion DESC
         `);
         res.json(result.rows);
@@ -31,7 +30,7 @@ app.get('/', verificarToken, async (req: AuthRequest, res: Response) => {
     }
 });
 
-// --- VER PERFIL ---
+// Devuelve los datos públicos del perfil de un usuario por ID
 app.get('/perfil/:id', verificarToken, async (req: AuthRequest, res: Response) => {
     try {
         const user = await pool.query(
@@ -45,7 +44,7 @@ app.get('/perfil/:id', verificarToken, async (req: AuthRequest, res: Response) =
     }
 });
 
-// --- STATUS (Solo ADMIN) ---
+// Activa o desactiva la cuenta de un usuario (solo ADMIN)
 app.put('/admin/status', verificarToken, async (req: AuthRequest, res: Response) => {
     const { usuario_id, activo } = req.body;
 
@@ -61,7 +60,6 @@ app.put('/admin/status', verificarToken, async (req: AuthRequest, res: Response)
 
         res.json({ message: `Usuario ${activo ? 'activado' : 'desactivado'} correctamente` });
 
-        // Comunicación asíncrona con Audit-Service
         axios.post('http://audit-service:3003/log', {
             usuario_id: req.user.id,
             accion: activo ? 'ACTIVAR_USUARIO' : 'DESACTIVAR_USUARIO',
@@ -74,7 +72,7 @@ app.put('/admin/status', verificarToken, async (req: AuthRequest, res: Response)
     }
 });
 
-// --- CAMBIAR ROL (Solo ADMIN) ---
+// Cambia el rol de un usuario entre USER y ADMIN (solo ADMIN)
 app.put('/admin/role', verificarToken, async (req: AuthRequest, res: Response) => {
     const { usuario_id, rol } = req.body;
 
@@ -90,7 +88,6 @@ app.put('/admin/role', verificarToken, async (req: AuthRequest, res: Response) =
 
         res.json({ message: `Rol actualizado a ${rol} correctamente` });
 
-        // Guardamos el movimiento en la auditoría
         axios.post('http://audit-service:3003/log', {
             usuario_id: req.user.id,
             accion: 'CAMBIO_DE_ROL',
