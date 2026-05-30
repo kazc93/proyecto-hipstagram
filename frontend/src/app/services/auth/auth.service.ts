@@ -59,9 +59,19 @@ export class AuthService {
     }
   }
 
-  // Elimina el token y el rol del almacenamiento local cerrando la sesión
+  obtenerUsername(): string {
+    return localStorage.getItem('username') || '';
+  }
+
+  obtenerInicial(): string {
+    const u = this.obtenerUsername();
+    return u ? u.charAt(0).toUpperCase() : '?';
+  }
+
+  // Elimina el token, el rol y el username cerrando la sesión
   logout(): void {
     localStorage.removeItem('token');
     localStorage.removeItem('rol');
+    localStorage.removeItem('username');
   }
 }

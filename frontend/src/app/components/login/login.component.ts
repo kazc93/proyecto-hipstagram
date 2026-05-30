@@ -35,6 +35,7 @@ export class LoginComponent {
         this.authService.guardarToken(respuesta.token);
         const rolUsuario = respuesta.user?.rol || 'USER';
         localStorage.setItem('rol', rolUsuario);
+        localStorage.setItem('username', respuesta.user?.username || '');
         if (rolUsuario === 'ADMIN') {
           this.router.navigate(['/admin']);
         } else {

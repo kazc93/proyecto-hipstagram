@@ -42,7 +42,7 @@ export class FeedComponent implements OnInit, OnDestroy, AfterViewInit {
   private destroy$ = new Subject<void>();
 
   constructor(
-    private authService: AuthService,
+    public authService: AuthService,
     private postService: PostService,
     private router: Router,
     private ngZone: NgZone
