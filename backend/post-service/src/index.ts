@@ -143,7 +143,8 @@ app.get('/', async (req, res) => {
                 p.descripcion,
                 p.fecha_publicacion,
                 u.username,
-                COALESCE((SELECT SUM(tipo_voto) FROM votos WHERE publicacion_id = p.id), 0) AS likes,
+                COALESCE((SELECT COUNT(*) FROM votos WHERE publicacion_id = p.id AND tipo_voto = 1),  0) AS likes,
+                COALESCE((SELECT COUNT(*) FROM votos WHERE publicacion_id = p.id AND tipo_voto = -1), 0) AS dislikes,
                 COALESCE((
                     SELECT json_agg(json_build_object('texto', c.texto, 'username', cu.username))
                     FROM comentarios c
@@ -161,7 +162,7 @@ app.get('/', async (req, res) => {
             WHERE p.estado_moderacion = 'APROBADO'
             ORDER BY
                 EXISTS(SELECT 1 FROM publicaciones_hashtags WHERE publicacion_id = p.id) DESC,
-                COALESCE((SELECT SUM(tipo_voto) FROM votos WHERE publicacion_id = p.id), 0) DESC,
+                COALESCE((SELECT COUNT(*) FROM votos WHERE publicacion_id = p.id AND tipo_voto = 1), 0) DESC,
                 p.fecha_publicacion DESC
             LIMIT $1 OFFSET $2
         `, [limit, offset]);
@@ -188,7 +189,8 @@ app.get('/explore', async (req, res) => {
                 p.descripcion,
                 p.fecha_publicacion,
                 u.username,
-                COALESCE((SELECT SUM(tipo_voto) FROM votos WHERE publicacion_id = p.id), 0) AS likes
+                COALESCE((SELECT COUNT(*) FROM votos WHERE publicacion_id = p.id AND tipo_voto = 1),  0) AS likes,
+                COALESCE((SELECT COUNT(*) FROM votos WHERE publicacion_id = p.id AND tipo_voto = -1), 0) AS dislikes
             FROM publicaciones p
             LEFT JOIN usuarios u ON p.usuario_id = u.id
             WHERE p.estado_moderacion = 'APROBADO'

@@ -129,12 +129,16 @@
 
       <div class="p-4">
         <!-- Votos -->
-        <div class="flex space-x-4 mb-3">
-          <button (click)="votar(post.id, 1)"  class="text-gray-600 hover:text-red-500  text-2xl transform hover:scale-110 transition-all">❤️</button>
-          <button (click)="votar(post.id, -1)" class="text-gray-600 hover:text-blue-500 text-2xl transform hover:scale-110 transition-all">👎</button>
+        <div class="flex items-center space-x-5 mb-3">
+          <button (click)="votar(post.id, 1)" class="flex items-center space-x-1 text-gray-600 hover:text-red-500 transition-all">
+            <span class="text-2xl transform hover:scale-110 transition-all">❤️</span>
+            <span class="font-bold text-sm">{{ post.likes || 0 }}</span>
+          </button>
+          <button (click)="votar(post.id, -1)" class="flex items-center space-x-1 text-gray-600 hover:text-blue-500 transition-all">
+            <span class="text-2xl transform hover:scale-110 transition-all">👎</span>
+            <span class="font-bold text-sm">{{ post.dislikes || 0 }}</span>
+          </button>
         </div>
-
-        <p class="font-bold text-sm mb-3 text-hipstagram-dark">{{ post.likes || 0 }} puntos</p>
 
         <!-- Comentarios visibles -->
         <div class="space-y-1 mb-2" *ngIf="comentariosVisibles(post).length > 0">
