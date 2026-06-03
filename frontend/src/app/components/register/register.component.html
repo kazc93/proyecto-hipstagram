@@ -1,76 +1,50 @@
-<div class="min-h-screen flex flex-col items-center justify-center bg-linear-to-br from-hipstagram-lighter to-hipstagram-light relative overflow-hidden">
-  
-  <div class="absolute top-0 right-0 left-0 h-1/2 bg-hipstagram-primary origin-top-right -skew-y-3 transform z-0 opacity-20"></div>
+<div class="auth-shell">
+  <div class="auth-card">
 
-  <div class="bg-white rounded-2xl shadow-2xl p-6 sm:p-10 w-full max-w-md z-10 mx-4">
-    <h2 class="text-3xl sm:text-4xl font-extrabold text-center text-hipstagram-dark mb-6 sm:mb-8">Crear Cuenta</h2>
-
-    <div *ngIf="mensajeError" class="bg-red-100 text-red-600 p-3 rounded-lg text-sm mb-4 text-center">
-      {{ mensajeError }}
-    </div>
-    <div *ngIf="mensajeExito" class="bg-green-100 text-green-700 p-3 rounded-lg text-sm mb-4 text-center">
-      {{ mensajeExito }}
+    <div class="auth-logo">
+      <span class="auth-logo-hip">Hip</span><span class="auth-logo-sta">sta</span><span class="auth-logo-gram">gram</span>
     </div>
 
-    <form (ngSubmit)="registrarUsuario()" #registerForm="ngForm" class="space-y-5">
-      
-      <div>
-        <label class="block text-sm font-semibold text-hipstagram-dark mb-2">Nombre de usuario</label>
-        <div class="relative">
-          <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">👤</span>
-          <input 
-            type="text" 
-            name="username" 
-            [(ngModel)]="nuevoUsuario.username" 
-            required
-            placeholder="Ej. cool_dev_99" 
-            class="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-hipstagram-secondary focus:border-transparent transition-all"
-          >
+    <h2 class="auth-title">Crear Cuenta</h2>
+    <p class="auth-subtitle">Únete a la comunidad</p>
+
+    <div *ngIf="mensajeError"  class="auth-error">{{ mensajeError }}</div>
+    <div *ngIf="mensajeExito" class="auth-success">{{ mensajeExito }}</div>
+
+    <form (ngSubmit)="registrarUsuario()" #registerForm="ngForm" class="auth-form">
+
+      <div class="auth-field">
+        <label class="auth-label">Nombre de usuario</label>
+        <div class="auth-input-wrap">
+          <span class="auth-icon">👤</span>
+          <input type="text" name="username" [(ngModel)]="nuevoUsuario.username"
+                 required placeholder="Ej. cool_dev_99" class="auth-input">
         </div>
       </div>
 
-      <div>
-        <label class="block text-sm font-semibold text-hipstagram-dark mb-2">Correo electrónico</label>
-        <div class="relative">
-          <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">✉️</span>
-          <input 
-            type="email" 
-            name="email" 
-            [(ngModel)]="nuevoUsuario.email" 
-            required
-            placeholder="Ingresa tu correo" 
-            class="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-hipstagram-secondary focus:border-transparent transition-all"
-          >
+      <div class="auth-field">
+        <label class="auth-label">Correo electrónico</label>
+        <div class="auth-input-wrap">
+          <span class="auth-icon">✉️</span>
+          <input type="email" name="email" [(ngModel)]="nuevoUsuario.email"
+                 required placeholder="Ingresa tu correo" class="auth-input">
         </div>
       </div>
 
-      <div>
-        <label class="block text-sm font-semibold text-hipstagram-dark mb-2">Contraseña</label>
-        <div class="relative">
-          <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">🔒</span>
-          <input 
-            type="password" 
-            name="password" 
-            [(ngModel)]="nuevoUsuario.password" 
-            required
-            minlength="6"
-            placeholder="Crea una contraseña" 
-            class="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-hipstagram-secondary focus:border-transparent transition-all"
-          >
+      <div class="auth-field">
+        <label class="auth-label">Contraseña</label>
+        <div class="auth-input-wrap">
+          <span class="auth-icon">🔒</span>
+          <input type="password" name="password" [(ngModel)]="nuevoUsuario.password"
+                 required minlength="6" placeholder="Mínimo 6 caracteres" class="auth-input">
         </div>
       </div>
 
-      <button 
-        type="submit" 
-        [disabled]="!registerForm.valid"
-        class="w-full py-3 mt-4 bg-hipstagram-primary hover:bg-hipstagram-dark text-white font-bold rounded-lg shadow-md transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed">
-        Registrarse
-      </button>
+      <button type="submit" [disabled]="!registerForm.valid" class="auth-btn">Registrarse</button>
 
     </form>
 
-    <div class="mt-8 text-center text-sm text-gray-500">
-      ¿Ya tienes una cuenta? <a routerLink="/login" class="text-hipstagram-primary font-bold hover:underline cursor-pointer">Inicia sesión</a>
-    </div>
+    <p class="auth-switch">¿Ya tienes una cuenta? <a routerLink="/login" class="auth-link">Inicia sesión</a></p>
+
   </div>
 </div>

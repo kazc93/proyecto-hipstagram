@@ -1,192 +1,129 @@
-<div class="min-h-screen bg-gray-50">
+<div class="feed-shell">
 
-  <!-- ── Navbar ── -->
-  <nav class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
-    <div class="max-w-5xl mx-auto px-4 py-3 flex justify-between items-center">
-      <h1 class="text-xl sm:text-2xl font-extrabold text-hipstagram-primary tracking-tight">Hipstagram</h1>
+  <!-- ═══ NAVBAR ═══ -->
+  <nav class="feed-nav">
+    <div class="feed-nav-top">
+      <h1 class="feed-logo"><span class="logo-hip">Hip</span><span class="logo-sta">sta</span><span class="logo-gram">gram</span></h1>
 
-      <div class="hidden sm:block relative">
+      <div class="feed-search-wrap">
         <input type="text" [(ngModel)]="terminoBusqueda" (keyup.enter)="buscar()"
-          placeholder="Buscar hashtags o texto..."
-          class="bg-gray-100 rounded-md px-4 py-1.5 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-hipstagram-secondary w-64 transition-all">
-        <button *ngIf="terminoBusqueda" (click)="limpiarBusqueda()"
-          class="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-red-500 font-bold text-sm px-1">✕</button>
+               placeholder="Buscar hashtags o texto..." class="feed-search-input">
+        <button *ngIf="terminoBusqueda" (click)="limpiarBusqueda()" class="feed-search-clear">✕</button>
       </div>
 
-      <div class="flex items-center space-x-2 sm:space-x-4">
-        <button *ngIf="esAdmin()" (click)="irAAdmin()" class="flex flex-col sm:flex-row items-center text-gray-500 hover:text-hipstagram-primary transition-colors">
-          <span class="text-xl sm:hidden">⚙️</span>
-          <span class="text-xs sm:text-sm font-semibold hidden sm:block">Admin</span>
-        </button>
-        <button (click)="irAPerfil()" class="flex flex-col sm:flex-row items-center text-gray-500 hover:text-hipstagram-primary transition-colors">
-          <span class="text-xl sm:hidden">👤</span>
-          <span class="text-xs sm:text-sm font-semibold hidden sm:block">Mi Perfil</span>
-        </button>
-        <button (click)="cerrarSesion()" class="flex flex-col sm:flex-row items-center text-gray-500 hover:text-red-500 transition-colors">
-          <span class="text-xl sm:hidden">🚪</span>
-          <span class="text-xs sm:text-sm font-semibold hidden sm:block">Cerrar Sesión</span>
-        </button>
+      <div class="feed-nav-actions">
+        <button *ngIf="esAdmin()" (click)="irAAdmin()" class="feed-nav-btn admin-btn">⚙️</button>
+        <button (click)="irAPerfil()" class="feed-nav-btn">👤</button>
+        <button (click)="cerrarSesion()" class="feed-nav-btn logout-btn">🚪</button>
       </div>
     </div>
 
-    <!-- Barra de búsqueda móvil -->
-    <div class="sm:hidden px-4 pb-2">
-      <div class="relative">
+    <!-- Búsqueda móvil -->
+    <div class="feed-search-mobile">
+      <div class="feed-search-wrap">
         <input type="text" [(ngModel)]="terminoBusqueda" (keyup.enter)="buscar()"
-          placeholder="Buscar hashtags o texto..."
-          class="w-full bg-gray-100 rounded-full px-4 py-2 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-hipstagram-secondary">
-        <button *ngIf="terminoBusqueda" (click)="limpiarBusqueda()"
-          class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm">✕</button>
+               placeholder="Buscar hashtags o texto..." class="feed-search-input">
+        <button *ngIf="terminoBusqueda" (click)="limpiarBusqueda()" class="feed-search-clear">✕</button>
       </div>
     </div>
 
-    <!-- ── Pestañas Feed / Explorar ── -->
-    <div class="max-w-2xl mx-auto px-4 flex border-t border-gray-100">
-      <button
-        (click)="cambiarModo(false)"
-        class="flex-1 py-2 text-sm font-semibold transition-colors"
-        [class.text-hipstagram-primary]="!modoExplorar"
-        [class.border-b-2]="!modoExplorar"
-        [class.border-hipstagram-primary]="!modoExplorar"
-        [class.text-gray-400]="modoExplorar">
-        🏠 Feed
-      </button>
-      <button
-        (click)="cambiarModo(true)"
-        class="flex-1 py-2 text-sm font-semibold transition-colors"
-        [class.text-hipstagram-primary]="modoExplorar"
-        [class.border-b-2]="modoExplorar"
-        [class.border-hipstagram-primary]="modoExplorar"
-        [class.text-gray-400]="!modoExplorar">
-        🔥 Explorar
-      </button>
+    <!-- Tabs -->
+    <div class="feed-tabs">
+      <button class="feed-tab" [class.active]="!modoExplorar" (click)="cambiarModo(false)">🏠 Feed</button>
+      <button class="feed-tab" [class.active]="modoExplorar" (click)="cambiarModo(true)">🔥 Explorar</button>
     </div>
   </nav>
 
-  <main class="max-w-2xl mx-auto py-8 px-4 space-y-8">
+  <!-- ═══ MAIN ═══ -->
+  <main class="feed-main">
 
-    <!-- ── Caja de publicar (solo en Feed) ── -->
-    <div *ngIf="!modoExplorar" class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
-      <div class="flex items-center space-x-4 mb-4">
-        <div class="w-10 h-10 bg-linear-to-r from-hipstagram-primary to-hipstagram-light rounded-full flex shrink-0 items-center justify-center text-white font-bold text-sm">{{ authService.obtenerInicial() }}</div>
+    <!-- Caja publicar -->
+    <div *ngIf="!modoExplorar" class="publish-box">
+      <div class="publish-top">
+        <div class="publish-avatar">{{ authService.obtenerInicial() }}</div>
         <input type="text" [(ngModel)]="nuevoTexto" maxlength="128"
-          placeholder="¿Qué estás pensando? #hashtag"
-          class="w-full bg-gray-100 rounded-full px-5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-hipstagram-secondary transition-all">
+               placeholder="¿Qué estás pensando? #hashtag" class="publish-input">
       </div>
 
-      <div *ngIf="vistaPreviaImagen" class="mb-4 relative rounded-lg overflow-hidden h-48 bg-gray-100 border">
-        <img [src]="vistaPreviaImagen" class="w-full h-full object-cover">
-        <button (click)="archivoSeleccionado = null; vistaPreviaImagen = null"
-          class="absolute top-2 right-2 bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center shadow-md hover:bg-red-600 transition-colors">✕</button>
+      <div *ngIf="vistaPreviaImagen" class="publish-preview">
+        <img [src]="vistaPreviaImagen" alt="preview">
+        <button (click)="archivoSeleccionado = null; vistaPreviaImagen = null" class="publish-preview-remove">✕</button>
       </div>
 
-      <div class="flex justify-between items-center pt-3 border-t border-gray-100">
-        <input type="file" (change)="seleccionarImagen($event)" accept="image/*" class="hidden" #fileInput>
-        <button (click)="fileInput.click()" class="flex items-center text-gray-500 hover:text-hipstagram-primary transition-colors space-x-2 px-2 py-1 rounded-md hover:bg-gray-50">
-          <span class="text-xl">📷</span>
-          <span class="text-sm font-semibold">Subir foto</span>
-        </button>
-        <button (click)="publicar()" [disabled]="!archivoSeleccionado"
-          class="bg-hipstagram-primary hover:bg-hipstagram-dark text-white px-6 py-2 rounded-lg font-bold text-sm shadow-md transition-all disabled:opacity-50">
-          Publicar
-        </button>
+      <div class="publish-actions">
+        <input type="file" (change)="seleccionarImagen($event)" accept="image/*" class="hidden-input" #fileInput>
+        <button (click)="fileInput.click()" class="btn-upload">📷 Subir foto</button>
+        <button (click)="publicar()" [disabled]="!archivoSeleccionado" class="btn-publish">Publicar</button>
       </div>
     </div>
 
-    <!-- ── Título Explorar ── -->
-    <div *ngIf="modoExplorar" class="text-center">
-      <p class="text-xs text-gray-400 mt-1">Las publicaciones más populares ordenadas por likes</p>
-    </div>
+    <!-- Subtitle explorar -->
+    <p *ngIf="modoExplorar" class="explore-subtitle">Las publicaciones más populares ordenadas por likes</p>
 
-    <!-- ── Lista de publicaciones ── -->
-    <div *ngFor="let post of publicaciones" class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+    <!-- Posts -->
+    <div *ngFor="let post of publicaciones" class="post-card">
 
-      <div class="p-4 flex items-start justify-between gap-2">
-        <div class="flex gap-3 min-w-0 flex-1">
-          <div class="w-9 h-9 bg-hipstagram-dark rounded-full flex items-center justify-center text-white font-bold text-xs uppercase shrink-0">
-            {{ post.username?.charAt(0) || 'U' }}
-          </div>
-          <div class="min-w-0 flex-1">
-            <p class="font-bold text-sm text-hipstagram-dark leading-tight">{{ post.username || 'Usuario Anónimo' }}</p>
-            <p class="text-xs text-gray-400 mb-2">{{ post.fecha_publicacion | date:'short' }}</p>
-            <p class="text-sm text-gray-800">{{ limpiarHashtags(post.descripcion) }}</p>
+      <div class="post-header">
+        <div class="post-user">
+          <div class="post-avatar">{{ post.username?.charAt(0) || 'U' }}</div>
+          <div class="post-user-info">
+            <span class="post-username">{{ post.username || 'Usuario Anónimo' }}</span>
+            <span class="post-date">{{ post.fecha_publicacion | date:'short' }}</span>
+            <span class="post-desc">{{ limpiarHashtags(post.descripcion) }}</span>
           </div>
         </div>
-        <button *ngIf="esMiPublicacion(post)" (click)="eliminarPost(post.id)"
-          class="shrink-0 text-gray-400 hover:text-red-600 p-2 rounded-lg hover:bg-red-50 transition-colors">
-          <span class="text-xl leading-none">🗑️</span>
-        </button>
+        <button *ngIf="esMiPublicacion(post)" (click)="eliminarPost(post.id)" class="btn-delete">🗑️</button>
       </div>
 
-      <div class="w-full bg-gray-100">
-        <img [src]="post.url_imagen" alt="Post" class="w-full h-auto object-cover max-h-150">
+      <div class="post-img-wrap">
+        <img [src]="post.url_imagen" alt="Post" class="post-img">
       </div>
 
-      <div class="px-4 py-2 bg-gray-50 border-b border-gray-100" *ngIf="post.hashtags?.length > 0">
-        <div class="flex flex-wrap gap-2">
-          <span *ngFor="let tag of post.hashtags"
-            class="inline-block bg-hipstagram-primary text-white text-xs font-semibold px-3 py-1 rounded-full cursor-pointer hover:bg-hipstagram-dark transition-colors">
-            #{{ tag }}
-          </span>
-        </div>
+      <div *ngIf="post.hashtags?.length > 0" class="post-hashtags">
+        <span *ngFor="let tag of post.hashtags" class="hashtag">#{{ tag }}</span>
       </div>
 
-      <div class="p-4">
-        <!-- Votos -->
-        <div class="flex items-center space-x-5 mb-3">
-          <button (click)="votar(post.id, 1)" class="flex items-center space-x-1 text-gray-600 hover:text-red-500 transition-all">
-            <span class="text-2xl transform hover:scale-110 transition-all">❤️</span>
-            <span class="font-bold text-sm">{{ post.likes || 0 }}</span>
+      <div class="post-footer">
+        <div class="vote-row">
+          <button (click)="votar(post.id, 1)" class="btn-vote">
+            <span>❤️</span><span>{{ post.likes || 0 }}</span>
           </button>
-          <button (click)="votar(post.id, -1)" class="flex items-center space-x-1 text-gray-600 hover:text-blue-500 transition-all">
-            <span class="text-2xl transform hover:scale-110 transition-all">👎</span>
-            <span class="font-bold text-sm">{{ post.dislikes || 0 }}</span>
+          <button (click)="votar(post.id, -1)" class="btn-vote">
+            <span>👎</span><span>{{ post.dislikes || 0 }}</span>
           </button>
         </div>
 
-        <!-- Comentarios visibles -->
-        <div class="space-y-1 mb-2" *ngIf="comentariosVisibles(post).length > 0">
-          <div *ngFor="let com of comentariosVisibles(post)"
-            class="text-sm flex items-start space-x-2 bg-gray-50 p-2 rounded-lg">
-            <span class="font-bold text-hipstagram-dark text-xs mt-0.5">{{ com.username }}:</span>
-            <span class="text-gray-700 leading-tight">{{ com.texto }}</span>
+        <div class="comments-list" *ngIf="comentariosVisibles(post).length > 0">
+          <div *ngFor="let com of comentariosVisibles(post)" class="comment-item">
+            <span class="com-user">{{ com.username }}:</span>
+            <span class="com-text">{{ com.texto }}</span>
           </div>
         </div>
 
-        <!-- Botón Ver más comentarios -->
-        <button
-          *ngIf="hayMasComentarios(post)"
-          (click)="cargarMasComentarios(post.id)"
-          [disabled]="cargandoComentarios[post.id]"
-          class="text-xs text-hipstagram-primary hover:underline mb-3 disabled:opacity-50">
+        <button *ngIf="hayMasComentarios(post)" (click)="cargarMasComentarios(post.id)"
+                [disabled]="cargandoComentarios[post.id]" class="btn-more-comments">
           {{ cargandoComentarios[post.id] ? 'Cargando...' : 'Ver más comentarios' }}
         </button>
 
-        <!-- Input nuevo comentario -->
-        <div class="border-t border-gray-100 pt-3">
-          <div class="flex items-center space-x-2">
-            <input #comentarioInput type="text" placeholder="Añadir un comentario..." maxlength="128"
-              class="flex-1 text-xs bg-gray-50 rounded-full px-4 py-2 focus:outline-none focus:ring-1 focus:ring-hipstagram-primary border border-transparent focus:border-gray-200">
-            <button (click)="enviarComentario(post.id, comentarioInput.value); comentarioInput.value=''"
-              class="text-hipstagram-primary font-bold text-xs px-2 hover:text-hipstagram-dark transition-colors">
-              Publicar
-            </button>
-          </div>
+        <div class="comment-input-row">
+          <input #comentarioInput type="text" placeholder="Añadir un comentario..." maxlength="128" class="comment-input">
+          <button (click)="enviarComentario(post.id, comentarioInput.value); comentarioInput.value=''" class="btn-comment">Publicar</button>
         </div>
       </div>
+
     </div>
 
     <!-- Sin resultados -->
-    <div *ngIf="publicaciones.length === 0 && !cargandoMas" class="text-center py-10 text-gray-500">
-      <p class="text-3xl mb-2">📭</p>
-      <p class="font-medium">No se encontraron publicaciones.</p>
-      <button (click)="cargarFeed()" class="text-hipstagram-primary text-sm hover:underline mt-2">Ver todo el feed</button>
+    <div *ngIf="publicaciones.length === 0 && !cargandoMas" class="feed-empty">
+      <span>📭</span>
+      <p>No se encontraron publicaciones.</p>
+      <button (click)="cargarFeed()" class="btn-refresh">Ver todo el feed</button>
     </div>
 
-    <!-- Sentinel scroll infinito (solo en Feed) -->
-    <div #sentinel class="py-4 text-center">
-      <div *ngIf="cargandoMas" class="text-gray-400 text-sm animate-pulse">Cargando más publicaciones...</div>
-      <div *ngIf="!hayMasPosts && publicaciones.length > 0 && !modoExplorar" class="text-gray-400 text-sm">Ya viste todo 🎉</div>
+    <!-- Sentinel -->
+    <div #sentinel class="feed-sentinel">
+      <span *ngIf="cargandoMas">Cargando más...</span>
+      <span *ngIf="!hayMasPosts && publicaciones.length > 0 && !modoExplorar">Ya viste todo 🎉</span>
     </div>
 
   </main>

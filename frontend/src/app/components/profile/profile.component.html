@@ -1,66 +1,52 @@
-<div class="min-h-screen bg-gray-50">
+<div class="profile-shell">
 
   <!-- Header -->
-  <div class="bg-white border-b border-gray-200 sticky top-0 z-10 px-4 py-3 flex items-center gap-3">
-    <button (click)="volverAlFeed()" class="text-hipstagram-primary font-bold flex items-center gap-1 hover:opacity-75 transition-opacity">
-      ← Volver al feed
-    </button>
-  </div>
+  <header class="profile-header-bar">
+    <button (click)="volverAlFeed()" class="profile-back">← Feed</button>
+    <span class="profile-header-title">Perfil</span>
+    <span></span>
+  </header>
 
-  <div class="max-w-2xl mx-auto py-8 px-4">
+  <div class="profile-body">
 
-    <!-- Info del perfil -->
-    <div class="flex items-center gap-6 mb-8">
-
-      <!-- Avatar con inicial -->
-      <div class="w-20 h-20 rounded-full bg-hipstagram-primary text-white flex items-center justify-center text-3xl font-bold shrink-0">
-        {{ username ? username.charAt(0).toUpperCase() : '?' }}
-      </div>
-
-      <!-- Datos del usuario -->
-      <div class="flex-1">
-        <h2 class="text-xl font-bold text-gray-800 mb-3">{{ username || 'Usuario' }}</h2>
-
-        <!-- Estadísticas -->
-        <div class="flex gap-6 text-center">
-          <div>
-            <p class="font-bold text-gray-800 text-lg">{{ totalPosts }}</p>
-            <p class="text-xs text-gray-500">publicaciones</p>
+    <!-- Info usuario -->
+    <div class="profile-info">
+      <div class="profile-avatar">{{ username ? username.charAt(0).toUpperCase() : '?' }}</div>
+      <div class="profile-details">
+        <h2 class="profile-username">{{ username || 'Usuario' }}</h2>
+        <div class="profile-stats">
+          <div class="profile-stat">
+            <span class="profile-stat-num">{{ totalPosts }}</span>
+            <span class="profile-stat-label">publicaciones</span>
           </div>
-          <div>
-            <p class="font-bold text-gray-800 text-lg">{{ totalLikes }}</p>
-            <p class="text-xs text-gray-500">likes totales</p>
+          <div class="profile-stat">
+            <span class="profile-stat-num">{{ totalLikes }}</span>
+            <span class="profile-stat-label">likes totales</span>
           </div>
         </div>
       </div>
     </div>
 
-    <hr class="mb-6 border-gray-200">
+    <div class="profile-divider"></div>
 
     <!-- Grid de posts -->
-    <div *ngIf="!loading; else loadingTemplate" class="grid grid-cols-3 gap-1">
-      <div *ngFor="let post of posts"
-           class="relative aspect-square overflow-hidden bg-gray-200 rounded-sm cursor-pointer group">
-        <img [src]="post.url_imagen" [alt]="post.descripcion" class="w-full h-full object-cover">
-
-        <!-- Overlay con info al hacer hover -->
-        <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all flex flex-col items-center justify-center gap-2 opacity-0 group-hover:opacity-100 text-white">
-          <div class="flex gap-4 font-bold text-sm">
-            <span>❤️ {{ post.likes || 0 }}</span>
-            <span>💬 {{ post.total_comentarios || 0 }}</span>
-          </div>
-          <p class="text-xs text-center px-2 line-clamp-2 max-w-full">{{ post.descripcion }}</p>
+    <div *ngIf="!loading; else loadingTpl" class="profile-grid">
+      <div *ngFor="let post of posts" class="profile-grid-item">
+        <img [src]="post.url_imagen" [alt]="post.descripcion">
+        <div class="profile-grid-overlay">
+          <span>❤️ {{ post.likes || 0 }}</span>
+          <span>💬 {{ post.total_comentarios || 0 }}</span>
         </div>
       </div>
     </div>
 
-    <div *ngIf="posts.length === 0 && !loading" class="text-center py-16 text-gray-400">
-      <p class="text-4xl mb-2">📭</p>
-      <p class="font-medium">Aún no tienes publicaciones aprobadas.</p>
+    <div *ngIf="posts.length === 0 && !loading" class="profile-empty">
+      <span>📭</span>
+      <p>Aún no tienes publicaciones aprobadas.</p>
     </div>
 
-    <ng-template #loadingTemplate>
-      <div class="text-center py-16 text-gray-400 animate-pulse">Cargando galería...</div>
+    <ng-template #loadingTpl>
+      <div class="profile-loading">Cargando galería...</div>
     </ng-template>
 
   </div>
