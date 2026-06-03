@@ -127,6 +127,14 @@ pipeline {
                             printf 'DB_USER=hipstagram_admin\\n'      >> .env.prod
                             printf 'DB_PASSWORD=%s\\n' '${DB_PASS}'  >> .env.prod
                             printf 'JWT_SECRET=hipstagram_jwt_secret_2026\\n' >> .env.prod
+                            printf 'JWT_REFRESH_SECRET=super_secret_refresh\\n' >> .env.prod
+                            printf 'AUDIT_SERVICE_URL=http://audit-service:3003/log\\n' >> .env.prod
+
+                            # Credenciales AWS para S3 (subida de imágenes) y Rekognition
+                            printf 'AWS_ACCESS_KEY_ID=%s\\n' "\$AWS_ACCESS_KEY_ID"     >> .env.prod
+                            printf 'AWS_SECRET_ACCESS_KEY=%s\\n' "\$AWS_SECRET_ACCESS_KEY" >> .env.prod
+                            printf 'AWS_REGION=us-east-1\\n'                   >> .env.prod
+                            printf 'AWS_BUCKET_NAME=hipstagram-images\\n'      >> .env.prod
 
                             # Crear .env vacíos por servicio (las vars reales vienen de .env.prod)
                             for dir in backend/auth-service backend/post-service backend/audit-service backend/interactions-service backend/search-service backend/user-service backend/media-service backend/moderation-service backend/api-gateway; do

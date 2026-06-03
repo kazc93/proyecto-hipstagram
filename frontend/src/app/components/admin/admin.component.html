@@ -64,7 +64,7 @@
         <button (click)="limpiarFiltrosAuditoria()" class="btn-secondary">Limpiar</button>
       </div>
 
-      <!-- Tabla -->
+      <!-- Tabla (desktop) -->
       <div class="audit-table-wrapper">
         <table class="audit-table">
           <thead>
@@ -93,10 +93,26 @@
         <div *ngIf="logsAuditoria.length === 0" class="empty-state">No hay registros disponibles.</div>
       </div>
 
+      <!-- Tarjetas (móvil) -->
+      <div class="audit-cards">
+        <div *ngFor="let log of logsAuditoria" class="audit-card">
+          <div class="audit-card-head">
+            <span class="badge-accion">{{ log.accion }}</span>
+            <span class="badge-ok" [class.fallo]="log.result === 'FALLO'">{{ log.result || 'OK' }}</span>
+          </div>
+          <p class="audit-card-detalle">{{ log.detalles }}</p>
+          <div class="audit-card-meta">
+            <span>{{ log.fecha_accion | date:'short' }}</span>
+            <span class="audit-card-rol">{{ log.actor_role || 'N/A' }}</span>
+          </div>
+        </div>
+        <div *ngIf="logsAuditoria.length === 0" class="empty-state">No hay registros disponibles.</div>
+      </div>
+
       <!-- Paginación -->
       <div *ngIf="totalPaginasAuditoria > 1" class="pagination">
         <button (click)="cargarAuditoria(paginaAuditoria - 1)" [disabled]="paginaAuditoria === 1" class="btn-page">←</button>
-        <button *ngFor="let p of paginasArray" (click)="cargarAuditoria(p)" class="btn-page" [class.active]="p === paginaAuditoria">{{ p }}</button>
+        <span class="pagination-info">{{ paginaAuditoria }} / {{ totalPaginasAuditoria }}</span>
         <button (click)="cargarAuditoria(paginaAuditoria + 1)" [disabled]="paginaAuditoria === totalPaginasAuditoria" class="btn-page">→</button>
       </div>
     </div>
