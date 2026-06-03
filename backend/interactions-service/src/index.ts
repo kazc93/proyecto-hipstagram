@@ -31,7 +31,7 @@ app.post('/voto', verificarToken, async (req: AuthRequest, res: Response) => {
         axios.post('http://audit-service:3003/log', {
             usuario_id,
             accion: 'VOTO_PUBLICACION',
-            detalles: `Usuario votó ${tipo_voto} en post ${publicacion_id}`,
+            detalles: `Usuario votó ${tipo_voto === 1 ? 'like' : 'dislike'} en post ${publicacion_id}`,
             ip_origen: req.ip
         }).catch(err => console.error("Error en auditoría:", err.message));
 
