@@ -209,6 +209,10 @@ export class AdminComponent implements OnInit {
     this.cargarAuditoria(1);
   }
 
+  irAlFeed() {
+    this.router.navigate(['/feed']);
+  }
+
   cerrarSesion() {
     this.authService.logout();
     this.router.navigate(['/login']);

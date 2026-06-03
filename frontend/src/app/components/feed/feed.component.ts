@@ -256,6 +256,14 @@ export class FeedComponent implements OnInit, OnDestroy, AfterViewInit {
 
   // ── Navegación ────────────────────────────────────────────────────────
 
+  esAdmin(): boolean {
+    return localStorage.getItem('rol') === 'ADMIN';
+  }
+
+  irAAdmin() {
+    this.router.navigate(['/admin']);
+  }
+
   irAPerfil() {
     const uid = this.authService.obtenerUsuarioId();
     if (uid) this.router.navigate(['/profile', uid]);
