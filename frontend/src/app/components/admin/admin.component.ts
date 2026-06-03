@@ -162,6 +162,20 @@ export class AdminComponent implements OnInit {
     }
   }
 
+  eliminarPostDefinitivo(post: any) {
+    if (confirm(`¿Eliminar definitivamente esta publicación? Esta acción no se puede deshacer.`)) {
+      this.adminService.eliminarPublicacion(post.id).subscribe({
+        next: () => {
+          this.publicacionesModeracion = this.publicacionesModeracion.filter(p => p.id !== post.id);
+        },
+        error: (err) => {
+          console.error('Error al eliminar post:', err);
+          alert('Hubo un error al eliminar la publicación.');
+        }
+      });
+    }
+  }
+
   //filtrosAudit = { usuario_id: '', accion: '', fecha: '' };
 
   aplicarFiltros() {

@@ -354,6 +354,38 @@ app.put('/admin/moderation/:id', verificarToken, async (req: AuthRequest, res: R
     }
 });
 
+// Elimina definitivamente una publicación bloqueada (solo ADMIN)
+app.delete('/admin/moderation/:id', verificarToken, async (req: AuthRequest, res: Response) => {
+    if (req.user?.rol !== 'ADMIN') return res.status(403).json({ message: "Acceso denegado" });
+
+    const postId = req.params.id;
+
+    try {
+        const check = await pool.query(
+            "SELECT estado_moderacion FROM publicaciones WHERE id = $1",
+            [postId]
+        );
+
+        if (check.rows.length === 0) return res.status(404).json({ message: "Publicación no encontrada" });
+        if (check.rows[0].estado_moderacion !== 'BLOQUEADO') {
+            return res.status(400).json({ message: "Solo se pueden eliminar publicaciones bloqueadas" });
+        }
+
+        await pool.query("DELETE FROM publicaciones WHERE id = $1", [postId]);
+        res.json({ message: "Publicación eliminada definitivamente" });
+
+        axios.post('http://audit-service:3003/log', {
+            usuario_id: req.user.id,
+            accion: 'ELIMINAR_POST',
+            detalles: `Admin eliminó definitivamente el post ${postId}`,
+            ip_origen: req.ip
+        }).catch(err => console.error("Error enviando a auditoría:", err.message));
+
+    } catch (err: any) {
+        res.status(500).json({ error: "Error al eliminar la publicación" });
+    }
+});
+
 app.get('/health', (_req, res) => res.status(200).json({ status: 'ok' }));
 
 const PORT = process.env.PORT || 3002;

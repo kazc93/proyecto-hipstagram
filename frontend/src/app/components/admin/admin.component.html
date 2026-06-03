@@ -31,7 +31,10 @@
         <span class="text-lg">🛡️</span><span>Moderación</span>
       </button>
     </nav>
-    <div class="p-4 border-t border-gray-800">
+    <div class="p-4 border-t border-gray-800 space-y-2">
+      <button (click)="irAlFeed()" class="w-full flex items-center justify-center space-x-2 text-sm text-gray-400 hover:text-blue-400 transition-colors py-2">
+        <span>🏠</span><span>Ir al Feed</span>
+      </button>
       <button (click)="cerrarSesion()" class="w-full flex items-center justify-center space-x-2 text-sm text-gray-400 hover:text-red-400 transition-colors py-2">
         <span>🚪</span><span>Cerrar Sesión</span>
       </button>
@@ -232,6 +235,8 @@
                           class="text-xs text-green-600 font-bold underline">Aprobar</button>
                   <button *ngIf="post.estado_moderacion !== 'BLOQUEADO'" (click)="cambiarEstadoPost(post, 'BLOQUEADO')"
                           class="text-xs text-red-500 font-bold underline">Bloquear</button>
+                  <button *ngIf="post.estado_moderacion === 'BLOQUEADO'" (click)="eliminarPostDefinitivo(post)"
+                          class="text-xs text-gray-500 font-bold underline hover:text-red-700">Eliminar</button>
                 </td>
               </tr>
             </tbody>

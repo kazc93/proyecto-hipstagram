@@ -72,4 +72,9 @@ export class AdminService {
   obtenerAuditoriaFiltrada(filtros: any): Observable<any> {
     return this.http.get(`${this.apiUrl}/audit`, { headers: this.getHeaders(), params: filtros });
   }
+
+  // Elimina definitivamente una publicación bloqueada
+  eliminarPublicacion(postId: string): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/posts/admin/moderation/${postId}`, { headers: this.getHeaders() });
+  }
 }
