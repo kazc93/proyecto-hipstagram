@@ -141,12 +141,14 @@ pipeline {
                                 touch \$dir/.env
                             done
 
-                            # Detener contenedores previos (libera puertos ocupados)
-                            docker compose -f docker-compose.prod.yml down 2>/dev/null || true
+                            # Detener contenedores previos (proyecto fijo 'hipstagram' para no chocar con workspaces @2)
+                            docker compose -p hipstagram -f docker-compose.prod.yml down --remove-orphans 2>/dev/null || true
+                            # Eliminar contenedores huérfanos con nombre fijo por si quedaron de un deploy anterior
+                            docker rm -f auth_service post_service audit_service interactions_service search_service user_service media_service moderation_service api_gateway 2>/dev/null || true
 
                             # Pull últimas imágenes y levantar
-                            docker compose -f docker-compose.prod.yml pull
-                            docker compose -f docker-compose.prod.yml up -d --remove-orphans
+                            docker compose -p hipstagram -f docker-compose.prod.yml pull
+                            docker compose -p hipstagram -f docker-compose.prod.yml up -d --remove-orphans
 
                             # Limpiar imágenes sin usar
                             docker image prune -f
