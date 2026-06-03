@@ -277,11 +277,20 @@
   justify-content: space-between;
   margin-bottom: 8px;
 }
+.audit-card { cursor: pointer; }
 .audit-card-detalle {
   font-size: 13px;
   color: var(--text);
   margin: 0 0 10px;
   line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.audit-card-detalle.expanded {
+  -webkit-line-clamp: unset;
+  overflow: visible;
 }
 .audit-card-meta {
   display: flex;
@@ -330,6 +339,9 @@
 .audit-fecha { color: var(--text-muted); white-space: nowrap; }
 .audit-id    { font-family: monospace; font-size: 10px; color: var(--text-muted); max-width: 140px; overflow: hidden; text-overflow: ellipsis; }
 .audit-detalle { max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.audit-detalle.expanded { max-width: none; white-space: normal; word-break: break-word; }
+.audit-row { cursor: pointer; }
+.audit-id { cursor: pointer; }
 
 .badge-accion {
   background: rgba(239,68,68,.15);

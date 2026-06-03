@@ -79,14 +79,14 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let log of logsAuditoria">
+            <tr *ngFor="let log of logsAuditoria" (click)="toggleDetalle(log)" class="audit-row">
               <td class="audit-fecha">{{ log.fecha_accion | date:'medium' }}</td>
               <td><span class="badge-accion">{{ log.accion }}</span></td>
               <td class="audit-id">{{ log.usuario_id || 'N/A' }}</td>
               <td>{{ log.actor_role || 'N/A' }}</td>
               <td>{{ log.entity_type || 'N/A' }}</td>
               <td><span class="badge-ok" [class.fallo]="log.result === 'FALLO'">{{ log.result || 'OK' }}</span></td>
-              <td class="audit-detalle">{{ log.detalles }}</td>
+              <td class="audit-detalle" [class.expanded]="logExpandido === log">{{ log.detalles }}</td>
             </tr>
           </tbody>
         </table>
@@ -95,12 +95,12 @@
 
       <!-- Tarjetas (móvil) -->
       <div class="audit-cards">
-        <div *ngFor="let log of logsAuditoria" class="audit-card">
+        <div *ngFor="let log of logsAuditoria" class="audit-card" (click)="toggleDetalle(log)">
           <div class="audit-card-head">
             <span class="badge-accion">{{ log.accion }}</span>
             <span class="badge-ok" [class.fallo]="log.result === 'FALLO'">{{ log.result || 'OK' }}</span>
           </div>
-          <p class="audit-card-detalle">{{ log.detalles }}</p>
+          <p class="audit-card-detalle" [class.expanded]="logExpandido === log">{{ log.detalles }}</p>
           <div class="audit-card-meta">
             <span>{{ log.fecha_accion | date:'short' }}</span>
             <span class="audit-card-rol">{{ log.actor_role || 'N/A' }}</span>

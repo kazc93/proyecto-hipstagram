@@ -19,6 +19,7 @@ export class AdminComponent implements OnInit {
   // Arreglo para guardar los usuarios que nos manda el backend
   usuarios: any[] = []; 
   logsAuditoria: any[] = [];
+  logExpandido: any = null;
   paginaAuditoria = 1;
   totalPaginasAuditoria = 1;
   totalLogsAuditoria = 0;
@@ -106,6 +107,10 @@ export class AdminComponent implements OnInit {
       },
       error: (err) => console.error('Error al cargar la auditoría:', err)
     });
+  }
+
+  toggleDetalle(log: any) {
+    this.logExpandido = this.logExpandido === log ? null : log;
   }
 
   get paginasArray(): number[] {
