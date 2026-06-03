@@ -4,30 +4,23 @@
   <nav class="feed-nav">
     <div class="feed-nav-top">
       <h1 class="feed-logo"><span class="logo-hip">Hip</span><span class="logo-sta">sta</span><span class="logo-gram">gram</span></h1>
-
       <div class="feed-search-wrap">
         <input type="text" [(ngModel)]="terminoBusqueda" (keyup.enter)="buscar()"
                placeholder="Buscar hashtags o texto..." class="feed-search-input">
         <button *ngIf="terminoBusqueda" (click)="limpiarBusqueda()" class="feed-search-clear">✕</button>
-      </div>
-
-      <div class="feed-nav-actions">
-        <button *ngIf="esAdmin()" (click)="irAAdmin()" class="feed-nav-btn admin-btn">⚙️</button>
-        <button (click)="irAPerfil()" class="feed-nav-btn">👤</button>
-        <button (click)="cerrarSesion()" class="feed-nav-btn logout-btn">🚪</button>
       </div>
     </div>
 
     <!-- Búsqueda móvil -->
     <div class="feed-search-mobile">
-      <div class="feed-search-wrap">
+      <div class="feed-search-wrap full">
         <input type="text" [(ngModel)]="terminoBusqueda" (keyup.enter)="buscar()"
                placeholder="Buscar hashtags o texto..." class="feed-search-input">
         <button *ngIf="terminoBusqueda" (click)="limpiarBusqueda()" class="feed-search-clear">✕</button>
       </div>
     </div>
 
-    <!-- Tabs -->
+    <!-- Tabs Feed / Explorar -->
     <div class="feed-tabs">
       <button class="feed-tab" [class.active]="!modoExplorar" (click)="cambiarModo(false)">🏠 Feed</button>
       <button class="feed-tab" [class.active]="modoExplorar" (click)="cambiarModo(true)">🔥 Explorar</button>
@@ -85,11 +78,11 @@
 
       <div class="post-footer">
         <div class="vote-row">
-          <button (click)="votar(post.id, 1)" class="btn-vote">
-            <span>❤️</span><span>{{ post.likes || 0 }}</span>
+          <button (click)="votar(post.id, 1)" class="btn-vote like">
+            ❤️ {{ post.likes || 0 }}
           </button>
-          <button (click)="votar(post.id, -1)" class="btn-vote">
-            <span>👎</span><span>{{ post.dislikes || 0 }}</span>
+          <button (click)="votar(post.id, -1)" class="btn-vote dislike">
+            👎 {{ post.dislikes || 0 }}
           </button>
         </div>
 
@@ -110,7 +103,6 @@
           <button (click)="enviarComentario(post.id, comentarioInput.value); comentarioInput.value=''" class="btn-comment">Publicar</button>
         </div>
       </div>
-
     </div>
 
     <!-- Sin resultados -->
@@ -120,11 +112,35 @@
       <button (click)="cargarFeed()" class="btn-refresh">Ver todo el feed</button>
     </div>
 
-    <!-- Sentinel -->
     <div #sentinel class="feed-sentinel">
       <span *ngIf="cargandoMas">Cargando más...</span>
       <span *ngIf="!hayMasPosts && publicaciones.length > 0 && !modoExplorar">Ya viste todo 🎉</span>
     </div>
 
   </main>
+
+  <!-- ═══ BOTTOM NAV ═══ -->
+  <nav class="feed-bottom-nav">
+    <button (click)="cambiarModo(false)" [class.active]="!modoExplorar">
+      <span class="bnav-icon">🏠</span>
+      <span class="bnav-label">Feed</span>
+    </button>
+    <button (click)="cambiarModo(true)" [class.active]="modoExplorar">
+      <span class="bnav-icon">🔥</span>
+      <span class="bnav-label">Explorar</span>
+    </button>
+    <button (click)="irAPerfil()">
+      <span class="bnav-icon">👤</span>
+      <span class="bnav-label">Perfil</span>
+    </button>
+    <button *ngIf="esAdmin()" (click)="irAAdmin()">
+      <span class="bnav-icon">⚙️</span>
+      <span class="bnav-label">Admin</span>
+    </button>
+    <button (click)="cerrarSesion()">
+      <span class="bnav-icon">🚪</span>
+      <span class="bnav-label">Salir</span>
+    </button>
+  </nav>
+
 </div>
