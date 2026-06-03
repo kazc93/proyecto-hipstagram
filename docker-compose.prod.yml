@@ -49,8 +49,6 @@ services:
     env_file:
       - ./backend/post-service/.env
       - .env.prod
-    volumes:
-      - uploads_data:/app/uploads
     depends_on:
       audit-service:
         condition: service_healthy
@@ -176,7 +174,4 @@ services:
       retries: 3
       start_period: 40s
 
-volumes:
-  uploads_data:
-    external: true
-    name: hipstagram-pipeline_uploads_data
+
