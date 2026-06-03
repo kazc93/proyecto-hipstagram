@@ -178,3 +178,5 @@ services:
 
 volumes:
   uploads_data:
+    external: true
+    name: hipstagram-pipeline_uploads_data
