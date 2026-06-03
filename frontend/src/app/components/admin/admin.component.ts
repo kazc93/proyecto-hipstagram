@@ -14,7 +14,7 @@ import { FormsModule } from '@angular/forms';
 })
 export class AdminComponent implements OnInit {
   
-  vistaActual: 'usuarios' | 'auditoria' | 'moderacion' = 'usuarios';
+  vistaActual: 'usuarios' | 'auditoria' | 'moderacion' = 'moderacion';
   
   // Arreglo para guardar los usuarios que nos manda el backend
   usuarios: any[] = []; 
@@ -176,6 +176,13 @@ export class AdminComponent implements OnInit {
     }
   }
 
+  cambiarSubVistaYModeracion(sub: 'posts' | 'palabras') {
+    this.vistaActual = 'moderacion';
+    this.subVistaModeracion = sub;
+    if (sub === 'palabras') this.cargarPalabras();
+    if (sub === 'posts') this.cargarPublicacionesModeracion();
+  }
+
   //filtrosAudit = { usuario_id: '', accion: '', fecha: '' };
 
   aplicarFiltros() {
@@ -197,7 +204,8 @@ export class AdminComponent implements OnInit {
   filtrosAudit = {
     usuario_id: '',
     accion: '',
-    fecha: ''
+    fecha: '',
+    fecha_fin: ''
   };
 
   aplicarFiltrosAuditoria() {
@@ -205,7 +213,7 @@ export class AdminComponent implements OnInit {
   }
 
   limpiarFiltrosAuditoria() {
-    this.filtrosAudit = { usuario_id: '', accion: '', fecha: '' };
+    this.filtrosAudit = { usuario_id: '', accion: '', fecha: '', fecha_fin: '' };
     this.cargarAuditoria(1);
   }
 
