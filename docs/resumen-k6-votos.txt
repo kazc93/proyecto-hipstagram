@@ -1,0 +1,50 @@
+time="2026-06-04T14:55:55-06:00" level=error msg="Falta el TOKEN. Corre: k6 run -e TOKEN=<tu_token> votos.test.js" source=console
+time="2026-06-04T14:55:55-06:00" level=error msg="Falta el TOKEN. Corre: k6 run -e TOKEN=<tu_token> votos.test.js" source=console
+time="2026-06-04T14:55:55-06:00" level=error msg="Falta el TOKEN. Corre: k6 run -e TOKEN=<tu_token> votos.test.js" source=console
+time="2026-06-04T14:55:55-06:00" level=error msg="Falta el TOKEN. Corre: k6 run -e TOKEN=<tu_token> votos.test.js" source=console
+time="2026-06-04T14:55:55-06:00" level=error msg="Falta el TOKEN. Corre: k6 run -e TOKEN=<tu_token> votos.test.js" source=console
+time="2026-06-04T14:55:55-06:00" level=error msg="Falta el TOKEN. Corre: k6 run -e TOKEN=<tu_token> votos.test.js" source=console
+time="2026-06-04T14:55:55-06:00" level=error msg="Falta el TOKEN. Corre: k6 run -e TOKEN=<tu_token> votos.test.js" source=console
+time="2026-06-04T14:55:55-06:00" level=error msg="Falta el TOKEN. Corre: k6 run -e TOKEN=<tu_token> votos.test.js" source=console
+time="2026-06-04T14:55:55-06:00" level=error msg="Falta el TOKEN. Corre: k6 run -e TOKEN=<tu_token> votos.test.js" source=console
+time="2026-06-04T14:55:55-06:00" level=error msg="Falta el TOKEN. Corre: k6 run -e TOKEN=<tu_token> votos.test.js" source=console
+time="2026-06-04T14:55:55-06:00" level=error msg="Falta el TOKEN. Corre: k6 run -e TOKEN=<tu_token> votos.test.js" source=console
+time="2026-06-04T14:55:55-06:00" level=error msg="Falta el TOKEN. Corre: k6 run -e TOKEN=<tu_token> votos.test.js" source=console
+time="2026-06-04T14:55:55-06:00" level=error msg="Falta el TOKEN. Corre: k6 run -e TOKEN=<tu_token> votos.test.js" source=console
+time="2026-06-04T14:55:55-06:00" level=error msg="Falta el TOKEN. Corre: k6 run -e TOKEN=<tu_token> votos.test.js" source=console
+time="2026-06-04T14:55:55-06:00" level=error msg="Falta el TOKEN. Corre: k6 run -e TOKEN=<tu_token> votos.test.js" source=console
+
+running (1m00.0s), 01/20 VUs, 4359958 complete and 0 interrupted iterations
+default   [ 100% ] 01/20 VUs  1m00.0s/1m00.0s
+
+
+  █ THRESHOLDS 
+
+    http_req_duration
+    ✓ 'p(95)<2000' p(95)=0s
+
+    http_req_failed
+    ✓ 'rate<0.10' rate=0.00%
+
+
+  █ TOTAL RESULTS 
+
+    HTTP
+    http_req_duration....: avg=0s       min=0s     med=0s     max=0s      p(90)=0s   p(95)=0s      
+    http_req_failed......: 0.00%   0 out of 0
+
+    EXECUTION
+    iteration_duration...: avg=205.21µs min=3.08µs med=4.87µs max=68.43ms p(90)=77µs p(95)=384.83µs
+    iterations...........: 4359959 72666.919525/s
+    vus..................: 1       min=1          max=20
+    vus_max..............: 20      min=20         max=20
+
+    NETWORK
+    data_received........: 0 B     0 B/s
+    data_sent............: 0 B     0 B/s
+
+
+
+
+running (1m00.0s), 00/20 VUs, 4359959 complete and 0 interrupted iterations
+default ✓ [ 100% ] 00/20 VUs  1m0s

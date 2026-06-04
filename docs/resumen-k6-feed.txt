@@ -1,0 +1,50 @@
+default   [ 100% ] 002/100 VUs  2m00.0s/2m00.0s
+
+
+  █ THRESHOLDS 
+
+    errors
+    ✓ 'rate<0.05' rate=0.00%
+
+    http_req_duration
+    ✓ 'p(95)<2000' p(95)=196ms
+
+    http_req_failed
+    ✓ 'rate<0.05' rate=0.00%
+
+
+  █ TOTAL RESULTS 
+
+    checks_total.......: 15912   131.597485/s
+    checks_succeeded...: 100.00% 15912 out of 15912
+    checks_failed......: 0.00%   0 out of 15912
+
+    ✓ status 200
+    ✓ responde en < 2s
+    ✓ tiene campo data
+
+    CUSTOM
+    errors.........................: 0.00%  0 out of 5304
+    feed_duration..................: avg=137.04ms min=87.34ms med=118.09ms max=1.63s p(90)=164.22ms p(95)=196ms
+
+    HTTP
+    http_req_duration..............: avg=137.04ms min=87.34ms med=118.09ms max=1.63s p(90)=164.22ms p(95)=196ms
+      { expected_response:true }...: avg=137.04ms min=87.34ms med=118.09ms max=1.63s p(90)=164.22ms p(95)=196ms
+    http_req_failed................: 0.00%  0 out of 5304
+    http_reqs......................: 5304   43.865828/s
+
+    EXECUTION
+    iteration_duration.............: avg=1.14s    min=1.08s   med=1.11s    max=2.63s p(90)=1.17s    p(95)=1.23s
+    iterations.....................: 5304   43.865828/s
+    vus............................: 2      min=2         max=99 
+    vus_max........................: 100    min=100       max=100
+
+    NETWORK
+    data_received..................: 24 MB  201 kB/s
+    data_sent......................: 779 kB 6.4 kB/s
+
+
+
+
+running (2m00.9s), 000/100 VUs, 5304 complete and 0 interrupted iterations
+default ✓ [ 100% ] 000/100 VUs  2m0s
