@@ -19,7 +19,7 @@ app.use('/', auditRoutes);
 app.get(['/', '/audit'], verificarToken, async (req: AuthRequest, res: Response) => {
     if (req.user?.rol !== 'ADMIN') return res.status(403).send("No autorizado");
 
-    const { usuario_id, accion, fecha, page, limit } = req.query;
+    const { usuario_id, accion, fecha, fecha_fin, page, limit } = req.query;
     const pageNum = parseInt(page as string) || 1;
     const limitNum = parseInt(limit as string) || 10;
     const offset = (pageNum - 1) * limitNum;
@@ -32,22 +32,34 @@ app.get(['/', '/audit'], verificarToken, async (req: AuthRequest, res: Response)
         whereClause += ` AND usuario_id = $${params.length}`;
     }
     if (accion) {
-        params.push(accion);
-        whereClause += ` AND accion = $${params.length}`;
+        params.push(`%${accion}%`);
+        whereClause += ` AND accion ILIKE $${params.length}`;
     }
-    if (fecha) {
+    if (fecha && fecha_fin) {
+        params.push(`${fecha} 00:00:00`);
+        params.push(`${fecha_fin} 23:59:59`);
+        whereClause += ` AND fecha_accion BETWEEN $${params.length - 1} AND $${params.length}`;
+    } else if (fecha) {
         params.push(`${fecha}%`);
         whereClause += ` AND fecha_accion::text LIKE $${params.length}`;
     }
 
     try {
-        const countResult = await pool.query(`SELECT COUNT(*) FROM auditoria ${whereClause}`, params);
+        const countResult = await pool.query(
+            `SELECT COUNT(*) FROM auditoria a LEFT JOIN usuarios u ON a.usuario_id::text = u.id::text ${whereClause}`,
+            params
+        );
         const total = parseInt(countResult.rows[0].count);
 
         params.push(limitNum);
         params.push(offset);
         const dataResult = await pool.query(
-            `SELECT * FROM auditoria ${whereClause} ORDER BY fecha_accion DESC LIMIT $${params.length - 1} OFFSET $${params.length}`,
+            `SELECT a.*, COALESCE(u.username, a.usuario_id::text) AS username
+             FROM auditoria a
+             LEFT JOIN usuarios u ON a.usuario_id::text = u.id::text
+             ${whereClause}
+             ORDER BY a.fecha_accion DESC
+             LIMIT $${params.length - 1} OFFSET $${params.length}`,
             params
         );
 

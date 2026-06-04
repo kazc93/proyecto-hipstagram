@@ -54,7 +54,9 @@
 
       <!-- Filtros -->
       <div class="audit-filters">
-<input type="date" [(ngModel)]="filtrosAudit.fecha" class="audit-input">
+        <input type="text" [(ngModel)]="filtrosAudit.usuario_id" placeholder="Filtrar por userId..." class="audit-input">
+        <input type="text" [(ngModel)]="filtrosAudit.accion" placeholder="Filtrar por acción..." class="audit-input">
+        <input type="date" [(ngModel)]="filtrosAudit.fecha" class="audit-input">
         <input type="date" [(ngModel)]="filtrosAudit.fecha_fin" class="audit-input">
         <button (click)="aplicarFiltrosAuditoria()" class="btn-primary">Buscar</button>
         <button (click)="limpiarFiltrosAuditoria()" class="btn-secondary">Limpiar</button>
@@ -78,7 +80,7 @@
             <tr *ngFor="let log of logsAuditoria" (click)="toggleDetalle(log)" class="audit-row">
               <td class="audit-fecha">{{ log.fecha_accion | date:'medium' }}</td>
               <td><span class="badge-accion">{{ log.accion }}</span></td>
-              <td class="audit-id">{{ log.usuario_id || 'N/A' }}</td>
+              <td class="audit-id">{{ log.username || log.usuario_id || 'N/A' }}</td>
               <td>{{ log.actor_role || 'N/A' }}</td>
               <td>{{ log.entity_type || 'N/A' }}</td>
               <td><span class="badge-ok" [class.fallo]="log.result === 'FALLO'">{{ log.result || 'OK' }}</span></td>
@@ -99,6 +101,7 @@
           <p class="audit-card-detalle" [class.expanded]="logExpandido === log">{{ log.detalles }}</p>
           <div class="audit-card-meta">
             <span>{{ log.fecha_accion | date:'short' }}</span>
+            <span>{{ log.username || log.usuario_id || 'N/A' }}</span>
             <span class="audit-card-rol">{{ log.actor_role || 'N/A' }}</span>
           </div>
         </div>
