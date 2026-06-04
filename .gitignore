@@ -137,3 +137,4 @@ dist
 
 # Credenciales de producción generadas por Jenkins (nunca versionar)
 .env.prod
+docs/resultados-k6*.json
