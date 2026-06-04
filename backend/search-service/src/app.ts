@@ -3,8 +3,9 @@ import cors from 'cors';
 import pool from './db';
 
 const app = express();
+app.disable('x-powered-by');
 app.use(express.json());
-app.use(cors());
+app.use(cors({ origin: process.env.ALLOWED_ORIGIN || false }));
 
 app.get('/posts', async (req, res: Response) => {
     const termino = req.query.q as string;

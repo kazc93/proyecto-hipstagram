@@ -5,8 +5,9 @@ import pool from './db';
 import verificarToken, { AuthRequest } from './authMiddleware';
 
 const app = express();
+app.disable('x-powered-by');
 app.use(express.json());
-app.use(cors());
+app.use(cors({ origin: process.env.ALLOWED_ORIGIN || false }));
 
 app.get('/', verificarToken, async (req: AuthRequest, res: Response) => {
     if (req.user?.rol !== 'ADMIN') {

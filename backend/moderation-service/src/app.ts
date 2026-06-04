@@ -15,8 +15,9 @@ const logAudit = (usuario_id: string, accion: string, detalles: string, extras: 
 };
 
 const app = express();
+app.disable('x-powered-by');
 app.use(express.json());
-app.use(cors());
+app.use(cors({ origin: process.env.ALLOWED_ORIGIN || false }));
 
 const rekognition = new AWS.Rekognition({
     accessKeyId: process.env.AWS_ACCESS_KEY_ID,
