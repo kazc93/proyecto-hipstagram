@@ -139,3 +139,4 @@ dist
 .env.prod
 docs/resultados-k6*.json
 docs/evidencia-k6*.txt
+.DS_Store
