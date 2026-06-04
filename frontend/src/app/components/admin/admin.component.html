@@ -58,6 +58,11 @@
         <input type="text" [(ngModel)]="filtrosAudit.accion" placeholder="Filtrar por acción..." class="audit-input">
         <input type="date" [(ngModel)]="filtrosAudit.fecha" class="audit-input">
         <input type="date" [(ngModel)]="filtrosAudit.fecha_fin" class="audit-input">
+        <select [(ngModel)]="filtrosAudit.result" class="audit-input">
+          <option value="">Todos los resultados</option>
+          <option value="EXITO">ÉXITO</option>
+          <option value="FALLO">FALLO</option>
+        </select>
         <button (click)="aplicarFiltrosAuditoria()" class="btn-primary">Buscar</button>
         <button (click)="limpiarFiltrosAuditoria()" class="btn-secondary">Limpiar</button>
       </div>

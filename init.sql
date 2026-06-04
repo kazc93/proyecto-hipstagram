@@ -73,6 +73,12 @@ CREATE TABLE auditoria (
 );
 
 
+-- 9. Índices de auditoría para búsquedas eficientes por fecha, usuario y acción
+CREATE INDEX idx_auditoria_fecha    ON auditoria (fecha_accion DESC);
+CREATE INDEX idx_auditoria_usuario  ON auditoria (usuario_id);
+CREATE INDEX idx_auditoria_accion   ON auditoria (accion);
+CREATE INDEX idx_auditoria_result   ON auditoria (result);
+
 --Añadidos
 -- 1. Permitir que el ADMIN desactive usuarios
 ALTER TABLE usuarios ADD COLUMN activo BOOLEAN DEFAULT TRUE;

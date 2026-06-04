@@ -19,7 +19,7 @@ app.use('/', auditRoutes);
 app.get(['/', '/audit'], verificarToken, async (req: AuthRequest, res: Response) => {
     if (req.user?.rol !== 'ADMIN') return res.status(403).send("No autorizado");
 
-    const { usuario_id, accion, fecha, fecha_fin, page, limit } = req.query;
+    const { usuario_id, accion, fecha, fecha_fin, result, page, limit } = req.query;
     const pageNum = parseInt(page as string) || 1;
     const limitNum = parseInt(limit as string) || 10;
     const offset = (pageNum - 1) * limitNum;
@@ -34,6 +34,10 @@ app.get(['/', '/audit'], verificarToken, async (req: AuthRequest, res: Response)
     if (accion) {
         params.push(`%${accion}%`);
         whereClause += ` AND accion ILIKE $${params.length}`;
+    }
+    if (result) {
+        params.push(result);
+        whereClause += ` AND a.result = $${params.length}`;
     }
     if (fecha && fecha_fin) {
         params.push(`${fecha} 00:00:00`);

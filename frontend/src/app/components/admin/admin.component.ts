@@ -210,7 +210,8 @@ export class AdminComponent implements OnInit {
     usuario_id: '',
     accion: '',
     fecha: '',
-    fecha_fin: ''
+    fecha_fin: '',
+    result: ''
   };
 
   aplicarFiltrosAuditoria() {
@@ -218,7 +219,7 @@ export class AdminComponent implements OnInit {
   }
 
   limpiarFiltrosAuditoria() {
-    this.filtrosAudit = { usuario_id: '', accion: '', fecha: '', fecha_fin: '' };
+    this.filtrosAudit = { usuario_id: '', accion: '', fecha: '', fecha_fin: '', result: '' };
     this.cargarAuditoria(1);
   }
 

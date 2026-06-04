@@ -36,7 +36,21 @@ pipeline {
         }
 
         // ─────────────────────────────────────────
-        stage('3. Pruebas Unitarias y Cobertura') {
+        stage('3. Lint y Seguridad de Dependencias') {
+            steps {
+                dir('backend/auth-service')         { sh 'npm audit --audit-level=high || true' }
+                dir('backend/post-service')         { sh 'npm audit --audit-level=high || true' }
+                dir('backend/audit-service')        { sh 'npm audit --audit-level=high || true' }
+                dir('backend/interactions-service') { sh 'npm audit --audit-level=high || true' }
+                dir('backend/search-service')       { sh 'npm audit --audit-level=high || true' }
+                dir('backend/user-service')         { sh 'npm audit --audit-level=high || true' }
+                dir('backend/moderation-service')   { sh 'npm audit --audit-level=high || true' }
+                dir('backend/api-gateway')          { sh 'npm audit --audit-level=high || true' }
+            }
+        }
+
+        // ─────────────────────────────────────────
+        stage('4. Pruebas Unitarias y Cobertura') {
             steps {
                 dir('backend/auth-service')         { sh 'npm run test:cov' }
                 dir('backend/post-service')         { sh 'npm run test:cov' }
@@ -45,7 +59,7 @@ pipeline {
         }
 
         // ─────────────────────────────────────────
-        stage('4. Análisis SonarQube') {
+        stage('5. Análisis SonarQube') {
             environment {
                 scannerHome = tool 'SonarQubeScanner'
             }
@@ -64,7 +78,7 @@ pipeline {
         }
 
         // ─────────────────────────────────────────
-        stage('5. Quality Gate') {
+        stage('6. Quality Gate') {
             steps {
                 timeout(time: 5, unit: 'MINUTES') {
                     waitForQualityGate abortPipeline: true
@@ -73,7 +87,7 @@ pipeline {
         }
 
         // ─────────────────────────────────────────
-        stage('6. Build & Push a ECR') {
+        stage('7. Build & Push a ECR') {
             steps {
                 withCredentials([[
                     $class: 'AmazonWebServicesCredentialsBinding',
@@ -107,7 +121,7 @@ pipeline {
         }
 
         // ─────────────────────────────────────────
-        stage('7. Deploy en EC2') {
+        stage('8. Deploy en EC2') {
             steps {
                 withCredentials([
                     [$class: 'AmazonWebServicesCredentialsBinding',
@@ -159,7 +173,7 @@ pipeline {
         }
 
         // ─────────────────────────────────────────
-        stage('8. Smoke Test') {
+        stage('9. Smoke Test') {
             steps {
                 sh 'sleep 45'
                 sh 'curl -f http://localhost:8080/health || (echo "❌ Gateway no responde" && exit 1)'
