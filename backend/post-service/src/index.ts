@@ -29,18 +29,8 @@ app.use((req, res, next) => {
     next();
 });
 
-app.use('/uploads', express.static('uploads'));
-
-// Usa almacenamiento en S3 si hay credenciales configuradas, de lo contrario guarda en disco
-const useS3 = !!(process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY && process.env.AWS_BUCKET_NAME);
-
-const storage = useS3
-    ? multer.memoryStorage()
-    : multer.diskStorage({
-        destination: 'uploads/',
-        filename: (_req, file, cb) => cb(null, `${Date.now()}-${file.originalname}`)
-    });
-const upload = multer({ storage });
+// Las imágenes se almacenan en S3 
+const upload = multer({ storage: multer.memoryStorage() });
 
 // Sube una imagen, modera el contenido, extrae hashtags y crea la publicación
 app.post('/upload', verificarToken, upload.single('image'), async (req: AuthRequest, res: Response) => {
@@ -52,21 +42,15 @@ app.post('/upload', verificarToken, upload.single('image'), async (req: AuthRequ
     try {
         const s3FileName = `${Date.now()}-${req.file.originalname}`;
 
-        // Sube la imagen a S3 o guarda localmente según la configuración
-        let imageUrl: string;
-        if (useS3) {
-            const params = {
-                Bucket: process.env.AWS_BUCKET_NAME!,
-                Key: s3FileName,
-                Body: req.file.buffer,
-                ContentType: req.file.mimetype
-            };
-            const s3Response = await s3.upload(params).promise();
-            imageUrl = s3Response.Location;
-        } else {
-            const filename = (req.file as Express.Multer.File & { filename: string }).filename;
-            imageUrl = `${process.env.PUBLIC_URL || 'https://54.234.8.66.nip.io'}/posts/uploads/${filename}`;
-        }
+        // Sube la imagen a S3
+        const params = {
+            Bucket: process.env.AWS_BUCKET_NAME!,
+            Key: s3FileName,
+            Body: req.file.buffer,
+            ContentType: req.file.mimetype
+        };
+        const s3Response = await s3.upload(params).promise();
+        const imageUrl = s3Response.Location;
 
         // Envía texto e imagen al moderation-service para validar el contenido
         let estadoInicial = 'APROBADO';
@@ -193,7 +177,19 @@ app.get('/explore', async (req, res) => {
                 p.fecha_publicacion,
                 u.username,
                 COALESCE((SELECT COUNT(*) FROM votos WHERE publicacion_id = p.id AND tipo_voto = 1),  0) AS likes,
-                COALESCE((SELECT COUNT(*) FROM votos WHERE publicacion_id = p.id AND tipo_voto = -1), 0) AS dislikes
+                COALESCE((SELECT COUNT(*) FROM votos WHERE publicacion_id = p.id AND tipo_voto = -1), 0) AS dislikes,
+                COALESCE((
+                    SELECT json_agg(json_build_object('texto', c.texto, 'username', cu.username))
+                    FROM comentarios c
+                    JOIN usuarios cu ON c.usuario_id = cu.id
+                    WHERE c.publicacion_id = p.id
+                ), '[]'::json) AS comentarios,
+                COALESCE((
+                    SELECT json_agg(h.nombre ORDER BY h.nombre)
+                    FROM publicaciones_hashtags ph
+                    JOIN hashtags h ON ph.hashtag_id = h.id
+                    WHERE ph.publicacion_id = p.id
+                ), '[]'::json) AS hashtags
             FROM publicaciones p
             LEFT JOIN usuarios u ON p.usuario_id = u.id
             WHERE p.estado_moderacion = 'APROBADO'

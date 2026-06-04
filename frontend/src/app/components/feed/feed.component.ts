@@ -169,7 +169,15 @@ export class FeedComponent implements OnInit, OnDestroy, AfterViewInit {
     this.postService.votar(postId, tipo)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: () => this.cargarFeed(),
+        next: () => {
+          const post = this.publicaciones.find(p => p.id === postId);
+          if (!post) return;
+          if (tipo === 1) {
+            post.likes = Number(post.likes || 0) + 1;
+          } else {
+            post.dislikes = Number(post.dislikes || 0) + 1;
+          }
+        },
         error: () => alert('Ya has votado en esta publicación')
       });
   }
@@ -180,11 +188,11 @@ export class FeedComponent implements OnInit, OnDestroy, AfterViewInit {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
-          this.cargarFeed();
-          if (this.comentariosExtra[postId]) {
-            this.comentariosExtra[postId] = [];
-            this.comentariosPagina[postId] = 0;
-            this.cargarMasComentarios(postId);
+          const post = this.publicaciones.find(p => p.id === postId);
+          if (post) {
+            const username = this.authService.obtenerUsername();
+            if (!post.comentarios) post.comentarios = [];
+            post.comentarios.push({ texto, username });
           }
         },
         error: (err) => console.error('Error al comentar', err)
