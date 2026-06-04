@@ -29,8 +29,11 @@ app.use((req, res, next) => {
     next();
 });
 
-// Las imágenes se almacenan en S3 
-const upload = multer({ storage: multer.memoryStorage() });
+// Las imágenes se almacenan en S3 con límite de 10MB por archivo
+const upload = multer({
+    storage: multer.memoryStorage(),
+    limits: { fileSize: 10 * 1024 * 1024 }
+});
 
 // Sube una imagen, modera el contenido, extrae hashtags y crea la publicación
 app.post('/upload', verificarToken, upload.single('image'), async (req: AuthRequest, res: Response) => {
