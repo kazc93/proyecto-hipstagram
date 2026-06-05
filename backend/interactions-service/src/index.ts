@@ -32,7 +32,11 @@ app.post('/voto', verificarToken, async (req: AuthRequest, res: Response) => {
             usuario_id,
             accion: 'VOTO_PUBLICACION',
             detalles: `Usuario votó ${tipo_voto === 1 ? 'like' : 'dislike'} en post ${publicacion_id}`,
-            ip_origen: req.ip
+            ip_origen: req.ip,
+            actor_role: req.user?.rol || 'USER',
+            entity_type: 'POST',
+            entity_id: publicacion_id,
+            result: 'EXITO'
         }).catch(err => console.error("Error en auditoría:", err.message));
 
     } catch (err: any) {
@@ -65,7 +69,11 @@ app.post('/comentar', verificarToken, async (req: AuthRequest, res: Response) =>
             usuario_id,
             accion: 'COMENTAR_POST',
             detalles: `Usuario comentó: ${texto.substring(0, 30)}...`,
-            ip_origen: req.ip
+            ip_origen: req.ip,
+            actor_role: req.user?.rol || 'USER',
+            entity_type: 'COMENTARIO',
+            entity_id: nuevoComentario.rows[0].id,
+            result: 'EXITO'
         }).catch(err => console.error("Error en auditoría:", err.message));
 
     } catch (err: any) {

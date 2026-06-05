@@ -28,8 +28,8 @@ app.get(['/', '/audit'], verificarToken, async (req: AuthRequest, res: Response)
     const params: any[] = [];
 
     if (usuario_id) {
-        params.push(usuario_id);
-        whereClause += ` AND usuario_id = $${params.length}`;
+        params.push(`%${usuario_id}%`);
+        whereClause += ` AND (a.usuario_id::text ILIKE $${params.length} OR u.username ILIKE $${params.length})`;
     }
     if (accion) {
         params.push(`%${accion}%`);

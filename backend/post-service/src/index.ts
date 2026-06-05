@@ -107,7 +107,11 @@ app.post('/upload', verificarToken, upload.single('image'), async (req: AuthRequ
             usuario_id,
             accion: 'CREAR_POST',
             detalles: `Post creado con ID: ${nuevaPublicacion.id}. Estado: ${estadoInicial}`,
-            ip_origen: req.ip
+            ip_origen: req.ip,
+            actor_role: req.user?.rol || 'USER',
+            entity_type: 'POST',
+            entity_id: nuevaPublicacion.id,
+            result: 'EXITO'
         }).catch(e => console.error("⚠️ Error en auditoría:", e.message));
 
     } catch (err: any) {
