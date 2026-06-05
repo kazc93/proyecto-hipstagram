@@ -41,6 +41,8 @@ export class AdminComponent implements OnInit {
   // Esto se ejecuta automáticamente al abrir el panel
   ngOnInit(): void {
     this.cargarUsuarios();
+    this.cargarPublicacionesModeracion();
+    this.cargarPalabras();
   }
 
   cargarUsuarios() {
