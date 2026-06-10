@@ -39,7 +39,9 @@ const upload = multer({
 app.post('/upload', verificarToken, upload.single('image'), async (req: AuthRequest, res: Response) => {
     const { descripcion } = req.body;
     const usuario_id = req.user?.id;
-
+    if (descripcion && descripcion.length > 128){
+        return res.status(400).send("La descripción no puede superar los 128 caracteres");
+    }
     if (!req.file) return res.status(400).send("No se subió ninguna imagen");
 
     try {
