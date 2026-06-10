@@ -186,7 +186,7 @@ pipeline {
             echo "✅ Deploy exitoso → http://3.88.254.85:9090"
             mail to: 'upakevin93@gmail.com',
                  subject: "✅ ÉXITO: Despliegue de Hipstagram #${env.BUILD_NUMBER}",
-                 body: "¡Nítido! El pipeline terminó correctamente.\n\nEl nuevo código ya está corriendo en el servidor EC2:\n3.88.254.85\n\nPuedes ver los detalles del pipeline aquí:\nhttp://3.88.254.85:9090/job/hipstagram-pipeline/${env.BUILD_NUMBER}/console"
+                 body: "¡Nítido! El pipeline terminó correctamente.\n\nEl nuevo código ya está corriendo en el servidor EC2:\nPuedes ver los detalles del pipeline aquí:\nhttp://3.88.254.85:9090/job/hipstagram-pipeline/${env.BUILD_NUMBER}/console"
         }
         failure {
             echo "❌ Pipeline falló. Revisa los logs de Jenkins."
