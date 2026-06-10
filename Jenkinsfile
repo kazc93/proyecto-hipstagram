@@ -184,9 +184,17 @@ pipeline {
     post {
         success {
             echo "✅ Deploy exitoso → http://54.234.8.66:8080"
+            mail to: 'upakevin93@gmail.com',
+                 subject: "✅ ÉXITO: Despliegue de Hipstagram #${env.BUILD_NUMBER}",
+                 body: "¡Nítido! El pipeline terminó correctamente.\n\nEl nuevo código ya está corriendo en el servidor EC2 (http://54.234.8.66:8080).\n\nPuedes ver los detalles aquí:\n${env.BUILD_URL}"
         }
         failure {
             echo "❌ Pipeline falló. Revisa los logs de Jenkins."
+            
+                 mail to: 'upakevin93@gmail.com', 
+                 subject: "❌ ERROR: Fallo en Hipstagram #${env.BUILD_NUMBER}",
+                 body: "Hubo un problema durante la ejecución del pipeline.\n\nRevisa los logs de Jenkins inmediatamente para ver qué falló:\n${env.BUILD_URL}"
         }
     }
+}
 }
