@@ -5,6 +5,10 @@ pipeline {
         nodejs 'Node20'
     }
 
+    options {
+        disableConcurrentBuilds()
+    }
+    
     environment {
         AWS_ACCOUNT_ID = '630171690893'
         AWS_REGION     = 'us-east-1'
